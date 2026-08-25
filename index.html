@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Excel Plantilla Merger</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- SheetJS -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <!-- SortableJS for Drag and Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+
+    <style>
+        .drag-ghost {
+            opacity: 0.4;
+        }
+
+        .drag-chosen {
+            cursor: grabbing;
+        }
+
+        .drag-item {
+            cursor: grab;
+        }
+
+        .modal-enter {
+            animation: modalEnter 0.2s ease-out;
+        }
+
+        @keyframes modalEnter {
+            from {
+                opacity: 0;
+                transform: scale(0.97) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        #previewTable th,
+        #previewTable td {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen">
+
+    <!-- HEADER -->
+    <header class="bg-slate-900 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-5">
+            <h1 class="text-2xl font-bold">
+                Excel Plantilla Merger
+            </h1>
+
+            <p class="text-slate-400 text-sm mt-1">
+                Upload multiple Excel files and arrange the merging order.
+            </p>
+        </div>
+    </header>
+
+
+    <!-- MAIN -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- UPLOAD CARD -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-800">
+                        Upload Excel Files
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        Select multiple Excel files (.xlsx, .xls).
+                    </p>
+                </div>
+
+                <label
+                    class="inline-flex items-center justify-center px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl cursor-pointer transition font-medium">
+
+                    <span class="mr-2">📁</span>
+                    Select Excel Files
+
+                    <input
+                        type="file"
+                        id="excelFiles"
+                        multiple
+                        accept=".xlsx,.xls,.csv"
+                        class="hidden">
+                </label>
+
+            </div>
+
+            <!-- FILE LIST -->
+            <div id="fileList" class="mt-6 hidden">
+
+                <div class="flex items-center justify-between mb-3">
+
+                    <h3 class="font-semibold text-slate-700">
+                        Uploaded Files
+                    </h3>
+
+                    <span
+                        id="fileCount"
+                        class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+                        0 Files
+                    </span>
+
+                </div>
+
+                <div
+                    id="uploadedFiles"
+                    class="space-y-2">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+
+            <h2 class="text-lg font-semibold text-slate-800 mb-1">
+                Plantilla Arrangement
+            </h2>
+
+            <p class="text-sm text-slate-500 mb-5">
+                Configure which uploaded files will be included and arrange their order before merging.
+            </p>
+
+            <div class="flex flex-wrap gap-3">
+
+                <button
+                    id="openChecklistBtn"
+                    disabled
+                    class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-medium transition">
+
+                    ☰ Configure Plantilla Order
+
+                </button>
+
+
+                <button
+                    id="mergeBtn"
+                    disabled
+                    class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-medium transition">
+
+                    🔀 Merge Excel Files
+
+                </button>
+
+
+                <button
+                    id="downloadBtn"
+                    disabled
+                    class="px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-medium transition">
+
+                    ⬇ Download Merged File
+
+                </button>
+
+                <button
+                    id="summaryUnfilledBtn"
+                    class="px-5 py-3 bg-blue-600 hover:bg-blue-700
+                        disabled:bg-slate-300 disabled:cursor-not-allowed
+                        text-white rounded-xl font-medium transition"
+                >
+                    <a
+                        href="./summary-generator.html"
+                        style="text-decoration: none; color: inherit;"
+                    >
+                        📋 Summary
+                    </a>
+                </button>
+
+
+
+            </div>
+
+        </div>
+
+
+        <!-- SELECTED ORDER -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+
+            <div class="flex items-center justify-between mb-4">
+
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-800">
+                        Current Merge Order
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        This order will be used during the merging process.
+                    </p>
+                </div>
+
+            </div>
+
+            <div
+                id="mergeOrder"
+                class="space-y-3">
+
+                <div class="text-center py-8 text-slate-400">
+                    No files uploaded yet.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PREVIEW -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+
+            <div class="p-6 border-b border-slate-200">
+
+                <h2 class="text-lg font-semibold text-slate-800">
+                    Merged Data Preview
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    Preview of the merged Excel data.
+                </p>
+
+            </div>
+
+            <div
+                id="previewContainer"
+                class="overflow-auto max-h-[600px]">
+
+                <div class="text-center py-16 text-slate-400">
+                    Merged data will appear here.
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+
+    <!-- ========================================= -->
+    <!-- PLANTILLA CHECKLIST MODAL -->
+    <!-- ========================================= -->
+
+    <div
+        id="checklistModal"
+        class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+
+        <div
+            class="modal-enter bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden">
+
+            <!-- MODAL HEADER -->
+            <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
+
+                <div>
+
+                    <h2 class="text-xl font-bold text-slate-800">
+                        Plantilla Arrangement Checklist
+                    </h2>
+
+                    <p class="text-sm text-slate-500 mt-1">
+                        Check the files to include and drag them to arrange the merging order.
+                    </p>
+
+                </div>
+
+                <button
+                    id="closeModalBtn"
+                    class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 text-xl">
+
+                    ✕
+
+                </button>
+
+            </div>
+
+
+            <!-- MODAL BODY -->
+            <div class="p-6">
+
+                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5">
+
+                    <p class="text-sm text-blue-700">
+
+                        <strong>How it works:</strong>
+                        Select the Plantilla files you want to merge, then drag and drop them into the correct order.
+
+                    </p>
+
+                </div>
+
+
+                <!-- CHECKLIST -->
+                <div
+                    id="checklistContainer"
+                    class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+
+                </div>
+
+            </div>
+
+
+            <!-- MODAL FOOTER -->
+            <div class="px-6 py-5 border-t border-slate-200 flex justify-between items-center">
+
+                <button
+                    id="selectAllBtn"
+                    class="text-sm font-medium text-blue-600 hover:text-blue-700">
+
+                    Select All
+
+                </button>
+
+
+                <div class="flex gap-3">
+
+                    <button
+                        id="cancelModalBtn"
+                        class="px-5 py-2.5 border border-slate-300 rounded-xl hover:bg-slate-50 font-medium text-slate-700">
+
+                        Cancel
+
+                    </button>
+
+                    <button
+                        id="saveArrangementBtn"
+                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">
+
+                        Save Arrangement
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+        /*
+        |--------------------------------------------------------------------------
+        | GLOBAL VARIABLES
+        |--------------------------------------------------------------------------
+        */
+
+        let uploadedFiles = [];
+
+        let mergeOrder = [];
+
+        let mergedWorkbook = null;
+
+        let mergedData = [];
+
+        let sortableInstance = null;
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DOM ELEMENTS
+        |--------------------------------------------------------------------------
+        */
+
+        const excelFilesInput =
+            document.getElementById("excelFiles");
+
+        const uploadedFilesContainer =
+            document.getElementById("uploadedFiles");
+
+        const fileList =
+            document.getElementById("fileList");
+
+        const fileCount =
+            document.getElementById("fileCount");
+
+        const openChecklistBtn =
+            document.getElementById("openChecklistBtn");
+
+        const mergeBtn =
+            document.getElementById("mergeBtn");
+
+        const downloadBtn =
+            document.getElementById("downloadBtn");
+
+        const checklistModal =
+            document.getElementById("checklistModal");
+
+        const checklistContainer =
+            document.getElementById("checklistContainer");
+
+        const mergeOrderContainer =
+            document.getElementById("mergeOrder");
+
+        const previewContainer =
+            document.getElementById("previewContainer");
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPLOAD EXCEL FILES
+        |--------------------------------------------------------------------------
+        */
+
+        excelFilesInput.addEventListener("change", async function (event) {
+
+            const files = Array.from(event.target.files);
+
+            if (files.length === 0) {
+                return;
+            }
+
+
+            for (const file of files) {
+
+                // Avoid duplicate filenames
+                const exists = uploadedFiles.some(
+                    item => item.name === file.name
+                );
+
+                if (exists) {
+                    continue;
+                }
+
+
+                uploadedFiles.push({
+                    id: generateId(),
+                    name: file.name,
+                    file: file,
+                    selected: true,
+                    workbook: null
+                });
+
+            }
+
+
+            await readExcelFiles();
+
+            renderUploadedFiles();
+
+            updateMergeOrder();
+
+            fileList.classList.remove("hidden");
+
+            openChecklistBtn.disabled = false;
+
+            mergeBtn.disabled = false;
+
+        });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | READ EXCEL FILES
+        |--------------------------------------------------------------------------
+        */
+
+        async function readExcelFiles() {
+
+            for (const item of uploadedFiles) {
+
+                if (item.workbook) {
+                    continue;
+                }
+
+                const data =
+                    await item.file.arrayBuffer();
+
+                item.workbook =
+                    XLSX.read(data, {
+                        type: "array"
+                    });
+
+            }
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RENDER UPLOADED FILES
+        |--------------------------------------------------------------------------
+        */
+
+        function renderUploadedFiles() {
+
+            uploadedFilesContainer.innerHTML = "";
+
+            fileCount.textContent =
+                `${uploadedFiles.length} File${uploadedFiles.length !== 1 ? "s" : ""}`;
+
+
+            uploadedFiles.forEach((item, index) => {
+
+                const row = document.createElement("div");
+
+                row.className =
+                    "flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3";
+
+
+                row.innerHTML = `
+
+                    <div class="flex items-center gap-3">
+
+                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center">
+                            📊
+                        </div>
+
+                        <div>
+
+                            <div class="font-medium text-slate-700">
+                                ${escapeHtml(item.name)}
+                            </div>
+
+                            <div class="text-xs text-slate-400">
+                                File ${index + 1}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        onclick="removeFile('${item.id}')"
+                        class="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg text-sm">
+
+                        Remove
+
+                    </button>
+
+                `;
+
+
+                uploadedFilesContainer.appendChild(row);
+
+            });
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | REMOVE FILE
+        |--------------------------------------------------------------------------
+        */
+
+        function removeFile(id) {
+
+            uploadedFiles =
+                uploadedFiles.filter(
+                    item => item.id !== id
+                );
+
+
+            mergeOrder =
+                mergeOrder.filter(
+                    item => item.id !== id
+                );
+
+
+            renderUploadedFiles();
+
+            updateMergeOrder();
+
+
+            fileCount.textContent =
+                `${uploadedFiles.length} File${uploadedFiles.length !== 1 ? "s" : ""}`;
+
+
+            if (uploadedFiles.length === 0) {
+
+                fileList.classList.add("hidden");
+
+                openChecklistBtn.disabled = true;
+
+                mergeBtn.disabled = true;
+
+                downloadBtn.disabled = true;
+
+            }
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | OPEN CHECKLIST MODAL
+        |--------------------------------------------------------------------------
+        */
+
+        openChecklistBtn.addEventListener("click", function () {
+
+            renderChecklist();
+
+            checklistModal.classList.remove("hidden");
+
+        });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CLOSE MODAL
+        |--------------------------------------------------------------------------
+        */
+
+        document
+            .getElementById("closeModalBtn")
+            .addEventListener("click", closeModal);
+
+
+        document
+            .getElementById("cancelModalBtn")
+            .addEventListener("click", closeModal);
+
+
+        function closeModal() {
+
+            checklistModal.classList.add("hidden");
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RENDER DRAGGABLE CHECKLIST
+        |--------------------------------------------------------------------------
+        */
+
+        function renderChecklist() {
+
+            checklistContainer.innerHTML = "";
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Use existing merge order first
+            |--------------------------------------------------------------------------
+            */
+
+            let orderedItems = [];
+
+
+            if (mergeOrder.length > 0) {
+
+                orderedItems = [...mergeOrder];
+
+
+                uploadedFiles.forEach(file => {
+
+                    const exists =
+                        orderedItems.some(
+                            item => item.id === file.id
+                        );
+
+
+                    if (!exists) {
+                        orderedItems.push(file);
+                    }
+
+                });
+
+            } else {
+
+                orderedItems = [...uploadedFiles];
+
+            }
+
+
+
+            orderedItems.forEach((item, index) => {
+
+                const checklistItem =
+                    document.createElement("div");
+
+
+                checklistItem.className =
+                    "drag-item flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition";
+
+
+                checklistItem.dataset.id = item.id;
+
+
+                checklistItem.innerHTML = `
+
+                    <!-- DRAG HANDLE -->
+
+                    <div class="text-slate-400 text-lg select-none">
+                        ☰
+                    </div>
+
+
+                    <!-- ORDER -->
+
+                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-600">
+
+                        ${index + 1}
+
+                    </div>
+
+
+                    <!-- CHECKBOX -->
+
+                    <input
+                        type="checkbox"
+                        class="file-checkbox w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        ${item.selected ? "checked" : ""}
+                    >
+
+
+                    <!-- FILE NAME -->
+
+                    <div class="flex-1">
+
+                        <div class="font-medium text-slate-700">
+
+                            ${escapeHtml(item.name)}
+
+                        </div>
+
+                        <div class="text-xs text-slate-400 mt-1">
+
+                            Drag to change Plantilla order
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-600">
+
+                        #${index + 1}
+
+                    </div>
+
+                `;
+
+
+                checklistContainer.appendChild(
+                    checklistItem
+                );
+
+            });
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Initialize SortableJS
+            |--------------------------------------------------------------------------
+            */
+
+            if (sortableInstance) {
+
+                sortableInstance.destroy();
+
+            }
+
+
+            sortableInstance =
+                new Sortable(
+                    checklistContainer,
+                    {
+                        animation: 150,
+
+                        ghostClass: "drag-ghost",
+
+                        chosenClass: "drag-chosen",
+
+                        handle: ".drag-item",
+
+                        onEnd: function () {
+
+                            updateChecklistNumbers();
+
+                        }
+
+                    }
+                );
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE CHECKLIST NUMBERS
+        |--------------------------------------------------------------------------
+        */
+
+        function updateChecklistNumbers() {
+
+            const items =
+                checklistContainer.querySelectorAll(".drag-item");
+
+
+            items.forEach((item, index) => {
+
+                const numberElements =
+                    item.querySelectorAll(".rounded-full");
+
+
+                if (numberElements.length > 0) {
+
+                    numberElements[0].textContent =
+                        index + 1;
+
+                    numberElements[1].textContent =
+                        `#${index + 1}`;
+
+                }
+
+            });
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SELECT ALL
+        |--------------------------------------------------------------------------
+        */
+
+        document
+            .getElementById("selectAllBtn")
+            .addEventListener("click", function () {
+
+                const checkboxes =
+                    checklistContainer.querySelectorAll(
+                        ".file-checkbox"
+                    );
+
+
+                const allChecked =
+                    Array.from(checkboxes)
+                        .every(
+                            checkbox => checkbox.checked
+                        );
+
+
+                checkboxes.forEach(checkbox => {
+
+                    checkbox.checked = !allChecked;
+
+                });
+
+
+                this.textContent =
+                    allChecked
+                        ? "Select All"
+                        : "Deselect All";
+
+            });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SAVE ARRANGEMENT
+        |--------------------------------------------------------------------------
+        */
+
+        document
+            .getElementById("saveArrangementBtn")
+            .addEventListener("click", function () {
+
+                const items =
+                    checklistContainer.querySelectorAll(
+                        ".drag-item"
+                    );
+
+
+                mergeOrder = [];
+
+
+                items.forEach(itemElement => {
+
+                    const id =
+                        itemElement.dataset.id;
+
+
+                    const checkbox =
+                        itemElement.querySelector(
+                            ".file-checkbox"
+                        );
+
+
+                    const file =
+                        uploadedFiles.find(
+                            item => item.id === id
+                        );
+
+
+                    if (!file) {
+                        return;
+                    }
+
+
+                    file.selected =
+                        checkbox.checked;
+
+
+                    if (file.selected) {
+
+                        mergeOrder.push(file);
+
+                    }
+
+                });
+
+
+                updateMergeOrder();
+
+                closeModal();
+
+            });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE CURRENT MERGE ORDER
+        |--------------------------------------------------------------------------
+        */
+
+        function updateMergeOrder() {
+
+            mergeOrderContainer.innerHTML = "";
+
+
+            if (mergeOrder.length === 0) {
+
+                const selectedFiles =
+                    uploadedFiles.filter(
+                        file => file.selected
+                    );
+
+
+                mergeOrder =
+                    [...selectedFiles];
+
+            }
+
+
+            if (mergeOrder.length === 0) {
+
+                mergeOrderContainer.innerHTML = `
+
+                    <div class="text-center py-8 text-slate-400">
+
+                        No files selected for merging.
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+            mergeOrder.forEach((item, index) => {
+
+                const row =
+                    document.createElement("div");
+
+
+                row.className =
+                    "flex items-center gap-4 p-4 border border-slate-200 rounded-xl bg-slate-50";
+
+
+                row.innerHTML = `
+
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+
+                        ${index + 1}
+
+                    </div>
+
+
+                    <div class="flex-1">
+
+                        <div class="font-medium text-slate-700">
+
+                            ${escapeHtml(item.name)}
+
+                        </div>
+
+                        <div class="text-xs text-slate-400">
+
+                            Plantilla Position ${index + 1}
+
+                        </div>
+
+                    </div>
+
+
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+
+                        Included
+
+                    </span>
+
+                `;
+
+
+                mergeOrderContainer.appendChild(row);
+
+            });
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MERGE EXCEL FILES
+        |--------------------------------------------------------------------------
+        */
+
+        mergeBtn.addEventListener("click", function () {
+
+            if (mergeOrder.length === 0) {
+
+                alert(
+                    "Please select at least one Excel file."
+                );
+
+                return;
+
+            }
+
+
+            mergeExcelFiles();
+
+        });
+
+
+
+        function mergeExcelFiles() {
+
+            mergedData = [];
+
+
+            let headerAdded = false;
+
+
+            mergeOrder.forEach((fileItem, fileIndex) => {
+
+                const workbook =
+                    fileItem.workbook;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Read the first sheet
+                |--------------------------------------------------------------------------
+                |
+                | You can modify this later if you want
+                | to select a specific worksheet.
+                |
+                */
+
+                const firstSheetName =
+                    workbook.SheetNames[0];
+
+
+                const worksheet =
+                    workbook.Sheets[firstSheetName];
+
+
+                const jsonData =
+                    XLSX.utils.sheet_to_json(
+                        worksheet,
+                        {
+                            header: 1,
+                            defval: ""
+                        }
+                    );
+
+
+                if (jsonData.length === 0) {
+                    return;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | First File
+                |--------------------------------------------------------------------------
+                */
+
+                if (!headerAdded) {
+
+                    mergedData.push(
+                        ...jsonData
+                    );
+
+                    headerAdded = true;
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Remaining Files
+                |--------------------------------------------------------------------------
+                |
+                | Skip the first row because it is assumed
+                | to contain the same header.
+                |
+                */
+
+                else {
+
+                    const dataWithoutHeader =
+                        jsonData.slice(1);
+
+
+                    mergedData.push(
+                        ...dataWithoutHeader
+                    );
+
+                }
+
+            });
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | CREATE WORKBOOK
+            |--------------------------------------------------------------------------
+            */
+
+            const newWorkbook =
+                XLSX.utils.book_new();
+
+
+            const newWorksheet =
+                XLSX.utils.aoa_to_sheet(
+                    mergedData
+                );
+
+
+            XLSX.utils.book_append_sheet(
+                newWorkbook,
+                newWorksheet,
+                "Merged Plantilla"
+            );
+
+
+            mergedWorkbook =
+                newWorkbook;
+
+
+            renderPreview();
+
+
+            downloadBtn.disabled = false;
+
+
+            alert(
+                "Excel files successfully merged!"
+            );
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RENDER PREVIEW
+        |--------------------------------------------------------------------------
+        */
+
+        function renderPreview() {
+
+            if (mergedData.length === 0) {
+
+                previewContainer.innerHTML = `
+
+                    <div class="text-center py-16 text-slate-400">
+
+                        No merged data available.
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+            const previewRows =
+                mergedData.slice(0, 100);
+
+
+            let html = `
+
+                <table
+                    id="previewTable"
+                    class="min-w-full divide-y divide-slate-200 text-sm">
+
+                    <thead class="bg-slate-800 text-white">
+
+                        <tr>
+
+            `;
+
+
+            previewRows[0].forEach(header => {
+
+                html += `
+
+                    <th class="px-4 py-3 text-left font-semibold">
+
+                        ${escapeHtml(header)}
+
+                    </th>
+
+                `;
+
+            });
+
+
+            html += `
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody class="divide-y divide-slate-100">
+
+            `;
+
+
+            previewRows.slice(1).forEach(row => {
+
+                html += `<tr class="hover:bg-slate-50">`;
+
+
+                row.forEach(cell => {
+
+                    html += `
+
+                        <td class="px-4 py-3 text-slate-600">
+
+                            ${escapeHtml(cell)}
+
+                        </td>
+
+                    `;
+
+                });
+
+
+                html += `</tr>`;
+
+            });
+
+
+            html += `
+
+                    </tbody>
+
+                </table>
+
+            `;
+
+
+            if (mergedData.length > 100) {
+
+                html += `
+
+                    <div class="p-4 text-center text-sm text-slate-500 border-t">
+
+                        Showing first 100 rows of ${mergedData.length} total rows.
+
+                    </div>
+
+                `;
+
+            }
+
+
+            previewContainer.innerHTML = html;
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DOWNLOAD MERGED EXCEL FILE
+        |--------------------------------------------------------------------------
+        */
+
+        downloadBtn.addEventListener("click", function () {
+
+            if (!mergedWorkbook) {
+
+                alert(
+                    "Please merge the Excel files first."
+                );
+
+                return;
+
+            }
+
+
+            XLSX.writeFile(
+                mergedWorkbook,
+                "Merged_Plantilla.xlsx"
+            );
+
+        });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | GENERATE ID
+        |--------------------------------------------------------------------------
+        */
+
+        function generateId() {
+
+            return (
+                Date.now().toString(36)
+                +
+                Math.random()
+                    .toString(36)
+                    .substring(2, 9)
+            );
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ESCAPE HTML
+        |--------------------------------------------------------------------------
+        */
+
+        function escapeHtml(value) {
+
+            if (
+                value === null ||
+                value === undefined
+            ) {
+                return "";
+            }
+
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+        }
+
+
+    </script>
+
+</body>
+</html>
