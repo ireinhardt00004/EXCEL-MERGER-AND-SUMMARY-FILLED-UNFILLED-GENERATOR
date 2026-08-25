@@ -1,0 +1,5936 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Position Summary Generator</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- SheetJS -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+</head>
+
+
+<body class="bg-slate-100 min-h-screen">
+
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="bg-slate-900 shadow-lg">
+
+    <div class="max-w-7xl mx-auto px-6 py-6">
+
+        <h1 class="text-2xl md:text-3xl font-bold text-white">
+            Filled and Unfilled Position Summary
+        </h1>
+
+        <p class="text-slate-400 mt-2">
+            Upload your Plantilla Excel file and generate a summary
+            based on the Name of Incumbent.
+        </p>
+
+    </div>
+
+</header>
+
+
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- =========================================================
+         UPLOAD
+    ========================================================= -->
+
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 mb-6">
+
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+
+            <div>
+
+                <h2 class="text-lg font-bold text-slate-800">
+                    Upload Plantilla Excel File
+                </h2>
+
+                <p class="text-sm text-slate-500 mt-1">
+                    Filled positions are determined by the Name of Incumbent.
+                    If the incumbent is VACANT, the position is counted as unfilled.
+                </p>
+
+            </div>
+
+
+            <!-- ACTION BUTTONS -->
+
+            <div class="flex items-center gap-3">
+
+                <!-- ANCHOR BUTTON -->
+                 <a href="index.html" style="text-decoration: none;">   
+                <button
+                    id="anchorBtn"
+                    type="button"
+                    class="inline-flex items-center justify-center px-6 py-3
+                           bg-slate-700 hover:bg-slate-800 text-white
+                           rounded-xl cursor-pointer font-medium transition"
+                >
+                    ⚓ Excel Merger
+                </button>
+                </a>
+
+                <!-- SELECT EXCEL FILE -->
+
+                <label
+                    class="inline-flex items-center justify-center px-6 py-3
+                           bg-blue-600 hover:bg-blue-700 text-white
+                           rounded-xl cursor-pointer font-medium transition"
+                >
+
+                    📂 Select Excel File
+
+                    <input
+                        type="file"
+                        id="excelFile"
+                        accept=".xlsx,.xls,.csv"
+                        class="hidden"
+                    >
+
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <!-- FILE INFORMATION -->
+
+        <div
+            id="fileInfo"
+            class="hidden mt-6 p-4 bg-emerald-50
+                   border border-emerald-200 rounded-xl"
+        >
+
+            <div class="flex items-center gap-3">
+
+                <div
+                    class="w-10 h-10 bg-emerald-100 rounded-lg
+                           flex items-center justify-center"
+                >
+                    📊
+                </div>
+
+                <div>
+
+                    <div
+                        id="uploadedFileName"
+                        class="font-semibold text-emerald-800"
+                    ></div>
+
+                    <div
+                        id="uploadedFileDetails"
+                        class="text-sm text-emerald-600"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================================================
+         CONFIGURATION
+    ========================================================= -->
+
+    <div
+        id="configurationSection"
+        class="hidden bg-white border border-slate-200
+               rounded-2xl shadow-sm p-6 mb-6"
+    >
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+
+            <!-- SHEET -->
+
+            <div>
+
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Select Worksheet
+                </label>
+
+                <select
+                    id="sheetSelect"
+                    class="w-full px-4 py-3 border border-slate-300
+                           rounded-xl focus:ring-2 focus:ring-blue-500
+                           focus:outline-none"
+                ></select>
+
+            </div>
+
+
+            <!-- DATE -->
+
+            <div>
+
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Summary Date
+                </label>
+
+                <input
+                    type="month"
+                    id="summaryDate"
+                    class="w-full px-4 py-3 border border-slate-300
+                           rounded-xl focus:ring-2 focus:ring-blue-500
+                           focus:outline-none"
+                >
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div class="flex items-end gap-3">
+
+                <button
+                    id="positionFilterBtn"
+                    type="button"
+                    class="flex-1 px-5 py-3 bg-slate-700
+                           hover:bg-slate-800 text-white
+                           rounded-xl font-semibold transition"
+                >
+                    ⚙ Position Title Filter
+                </button>
+
+                <button
+                    id="generateBtn"
+                    type="button"
+                    class="flex-1 px-5 py-3 bg-indigo-600
+                           hover:bg-indigo-700 text-white
+                           rounded-xl font-semibold transition"
+                >
+                    ⚡ Generate Summary
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- DETECTED COLUMNS -->
+
+        <div
+            id="columnInfo"
+            class="hidden mt-6 p-5 bg-slate-50
+                   border border-slate-200 rounded-xl"
+        >
+
+            <h3 class="font-semibold text-slate-700 mb-3">
+                Detected Excel Columns
+            </h3>
+
+            <div
+                id="detectedColumns"
+                class="flex flex-wrap gap-2"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================================================
+         SUMMARY CARDS
+    ========================================================= -->
+
+    <div
+        id="summaryCards"
+        class="hidden grid grid-cols-1 sm:grid-cols-2
+               xl:grid-cols-5 gap-5 mb-6"
+    >
+
+
+        <!-- TOTAL FILLED -->
+
+        <div
+            class="bg-white rounded-2xl border border-slate-200
+                   shadow-sm p-5"
+        >
+
+            <div class="text-sm font-medium text-slate-500">
+                Total Filled
+            </div>
+
+            <div
+                id="totalFilledCard"
+                class="text-3xl font-bold text-emerald-600 mt-2"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL UNFILLED -->
+
+        <div
+            class="bg-white rounded-2xl border border-slate-200
+                   shadow-sm p-5"
+        >
+
+            <div class="text-sm font-medium text-slate-500">
+                Total Unfilled
+            </div>
+
+            <div
+                id="totalUnfilledCard"
+                class="text-3xl font-bold text-red-600 mt-2"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL POSITIONS -->
+
+        <div
+            class="bg-white rounded-2xl border border-slate-200
+                   shadow-sm p-5"
+        >
+
+            <div class="text-sm font-medium text-slate-500">
+                Total Positions
+            </div>
+
+            <div
+                id="totalPositionsCard"
+                class="text-3xl font-bold text-blue-600 mt-2"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <!-- VACANCY RATE -->
+
+        <div
+            class="bg-white rounded-2xl border border-slate-200
+                   shadow-sm p-5"
+        >
+
+            <div class="text-sm font-medium text-slate-500">
+                Vacancy Rate
+            </div>
+
+            <div
+                id="vacancyRateCard"
+                class="text-3xl font-bold text-orange-600 mt-2"
+            >
+                0%
+            </div>
+
+        </div>
+
+
+        <!-- FILLED RATE -->
+
+        <div
+            class="bg-white rounded-2xl border border-slate-200
+                   shadow-sm p-5"
+        >
+
+            <div class="text-sm font-medium text-slate-500">
+                Filled Rate
+            </div>
+
+            <div
+                id="filledRateCard"
+                class="text-3xl font-bold text-indigo-600 mt-2"
+            >
+                0%
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================================================
+         SUMMARY TABLE
+    ========================================================= -->
+
+    <div
+        id="summarySection"
+        class="hidden bg-white rounded-2xl border border-slate-200
+               shadow-sm overflow-hidden"
+    >
+
+        <!-- SUMMARY HEADER -->
+
+        <div
+            class="p-6 border-b border-slate-200
+                   flex flex-col lg:flex-row
+                   lg:items-center lg:justify-between gap-4"
+        >
+
+            <div>
+
+                <h2 class="text-xl font-bold text-slate-800">
+                    SUMMARY OF FILLED AND UNFILLED POSITIONS
+                </h2>
+
+                <p
+                    id="summaryAsOf"
+                    class="text-sm text-slate-500 mt-1"
+                ></p>
+
+            </div>
+
+
+            <!-- EXPORT BUTTON -->
+
+            <button
+                id="exportBtn"
+                type="button"
+                class="px-5 py-3 bg-emerald-600
+                       hover:bg-emerald-700 text-white
+                       rounded-xl font-medium"
+            >
+                ⬇ Export Summary
+            </button>
+
+        </div>
+
+
+        <!-- SUMMARY TABLE -->
+
+        <div class="overflow-x-auto">
+
+            <table class="min-w-full text-sm border-collapse">
+
+                <thead>
+
+                    <!-- FIRST HEADER ROW -->
+
+                    <tr class="bg-slate-800 text-white">
+
+                        <th
+                            rowspan="2"
+                            class="border border-slate-600
+                                   px-4 py-4 text-center"
+                        >
+                            FUNCTIONAL DIVISION
+                        </th>
+
+
+                        <!-- NON-TEACHING -->
+
+                        <th
+                            colspan="3"
+                            class="border border-slate-600
+                                   px-4 py-3 text-center"
+                        >
+                            NON-TEACHING
+                        </th>
+
+
+                        <!-- TEACHING -->
+
+                        <th
+                            colspan="3"
+                            class="border border-slate-600
+                                   px-4 py-3 text-center"
+                        >
+                            TEACHING
+                        </th>
+
+
+                        <!-- TEACHING RELATED -->
+
+                        <th
+                            colspan="3"
+                            class="border border-slate-600
+                                   px-4 py-3 text-center"
+                        >
+                            TEACHING RELATED
+                        </th>
+
+
+                        <!-- TOTAL -->
+
+                        <th
+                            colspan="3"
+                            class="border border-slate-600
+                                   px-4 py-3 text-center bg-blue-800"
+                        >
+                            TOTAL
+                        </th>
+
+
+                        <!-- PERCENT FILLED -->
+
+                        <th
+                            rowspan="2"
+                            class="border border-slate-600
+                                   px-4 py-4 text-center
+                                   bg-indigo-800"
+                        >
+                            % FILLED
+                        </th>
+
+                    </tr>
+
+
+                    <!-- SECOND HEADER ROW -->
+
+                    <tr class="bg-slate-700 text-white">
+
+                        <!-- NON-TEACHING -->
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            FILLED
+                        </th>
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            UNFILLED
+                        </th>
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            TOTAL
+                        </th>
+
+
+                        <!-- TEACHING -->
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            FILLED
+                        </th>
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            UNFILLED
+                        </th>
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            TOTAL
+                        </th>
+
+
+                        <!-- TEACHING RELATED -->
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            FILLED
+                        </th>
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            UNFILLED
+                        </th>
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            TOTAL
+                        </th>
+
+
+                        <!-- TOTAL -->
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            FILLED
+                        </th>
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            UNFILLED
+                        </th>
+
+                        <th class="border border-slate-600 px-3 py-2">
+                            GRAND TOTAL
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <!-- TABLE BODY -->
+
+                <tbody
+                    id="summaryTableBody"
+                    class="divide-y divide-slate-200"
+                ></tbody>
+
+
+                <!-- TABLE FOOTER -->
+
+                <tfoot
+                    id="summaryTableFooter"
+                    class="bg-slate-100 font-bold"
+                ></tfoot>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+
+
+<!-- =========================================================
+     POSITION FILTER MODAL
+========================================================= -->
+
+<div
+    id="positionFilterModal"
+    class="hidden fixed inset-0 z-50
+           bg-slate-900/60 backdrop-blur-sm
+           flex items-center justify-center p-4"
+>
+
+    <div
+        class="bg-white w-full max-w-6xl
+               max-h-[90vh] rounded-2xl
+               shadow-2xl flex flex-col"
+    >
+
+        <!-- HEADER -->
+
+        <div
+            class="px-6 py-5 border-b border-slate-200
+                   flex items-center justify-between"
+        >
+
+            <div>
+
+                <h2 class="text-xl font-bold text-slate-800">
+                    Position Filter & Category Control
+                </h2>
+
+                <p class="text-sm text-slate-500 mt-1">
+                    Enable or disable categories and individual positions.
+                    Positions with (CT) are recognized automatically.
+                </p>
+
+            </div>
+
+
+            <button
+                id="closePositionModalBtn"
+                class="w-10 h-10 flex items-center
+                       justify-center rounded-lg
+                       hover:bg-slate-100
+                       text-slate-500 text-xl"
+            >
+                ✕
+            </button>
+
+        </div>
+
+
+        <!-- SEARCH -->
+
+        <div class="px-6 pt-5">
+
+            <input
+                type="text"
+                id="positionSearch"
+                placeholder="🔍 Search position..."
+                class="w-full px-4 py-3 border border-slate-300
+                       rounded-xl focus:ring-2 focus:ring-indigo-500
+                       focus:outline-none"
+            >
+
+        </div>
+
+
+        <!-- CATEGORY PANELS -->
+
+        <div
+            class="grid grid-cols-1 lg:grid-cols-3
+                   gap-5 p-6 overflow-y-auto"
+        >
+
+
+            <!-- NON-TEACHING -->
+
+            <div
+                id="nonTeachingPanel"
+                class="border border-slate-200 rounded-2xl
+                       overflow-hidden flex flex-col"
+            >
+
+                <div class="p-4 bg-blue-50 border-b border-blue-100">
+
+                    <div class="flex items-center justify-between">
+
+                        <div>
+
+                            <h3 class="font-bold text-blue-800">
+                                Non-Teaching
+                            </h3>
+
+                            <p
+                                id="nonTeachingCount"
+                                class="text-xs text-blue-600 mt-1"
+                            >
+                                0 Positions
+                            </p>
+
+                        </div>
+
+
+                        <label
+                            class="flex items-center gap-2
+                                   text-xs font-semibold
+                                   text-slate-600"
+                        >
+
+                            Enable
+
+                            <input
+                                type="checkbox"
+                                id="nonTeachingCategoryToggle"
+                                checked
+                                class="w-5 h-5 text-indigo-600 rounded"
+                            >
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="flex gap-2 mt-4">
+
+                        <button
+                            onclick="setCategoryPositions('NON-TEACHING', true)"
+                            class="flex-1 px-3 py-2 text-xs
+                                   bg-white border border-blue-200
+                                   rounded-lg hover:bg-blue-100"
+                        >
+                            Select All
+                        </button>
+
+                        <button
+                            onclick="setCategoryPositions('NON-TEACHING', false)"
+                            class="flex-1 px-3 py-2 text-xs
+                                   bg-white border border-blue-200
+                                   rounded-lg hover:bg-blue-100"
+                        >
+                            Disable All
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="nonTeachingList"
+                    class="p-3 space-y-2
+                           overflow-y-auto max-h-[450px]"
+                ></div>
+
+            </div>
+
+
+
+            <!-- TEACHING -->
+
+            <div
+                id="teachingPanel"
+                class="border border-slate-200 rounded-2xl
+                       overflow-hidden flex flex-col"
+            >
+
+                <div
+                    class="p-4 bg-emerald-50
+                           border-b border-emerald-100"
+                >
+
+                    <div class="flex items-center justify-between">
+
+                        <div>
+
+                            <h3 class="font-bold text-emerald-800">
+                                Teaching
+                            </h3>
+
+                            <p
+                                id="teachingCount"
+                                class="text-xs text-emerald-600 mt-1"
+                            >
+                                0 Positions
+                            </p>
+
+                        </div>
+
+
+                        <label
+                            class="flex items-center gap-2
+                                   text-xs font-semibold
+                                   text-slate-600"
+                        >
+
+                            Enable
+
+                            <input
+                                type="checkbox"
+                                id="teachingCategoryToggle"
+                                checked
+                                class="w-5 h-5 text-indigo-600 rounded"
+                            >
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="flex gap-2 mt-4">
+
+                        <button
+                            onclick="setCategoryPositions('TEACHING', true)"
+                            class="flex-1 px-3 py-2 text-xs
+                                   bg-white border border-emerald-200
+                                   rounded-lg hover:bg-emerald-100"
+                        >
+                            Select All
+                        </button>
+
+                        <button
+                            onclick="setCategoryPositions('TEACHING', false)"
+                            class="flex-1 px-3 py-2 text-xs
+                                   bg-white border border-emerald-200
+                                   rounded-lg hover:bg-emerald-100"
+                        >
+                            Disable All
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="teachingList"
+                    class="p-3 space-y-2
+                           overflow-y-auto max-h-[450px]"
+                ></div>
+
+            </div>
+
+
+
+            <!-- TEACHING RELATED -->
+
+            <div
+                id="teachingRelatedPanel"
+                class="border border-slate-200 rounded-2xl
+                       overflow-hidden flex flex-col"
+            >
+
+                <div
+                    class="p-4 bg-purple-50
+                           border-b border-purple-100"
+                >
+
+                    <div class="flex items-center justify-between">
+
+                        <div>
+
+                            <h3 class="font-bold text-purple-800">
+                                Teaching Related
+                            </h3>
+
+                            <p
+                                id="teachingRelatedCount"
+                                class="text-xs text-purple-600 mt-1"
+                            >
+                                0 Positions
+                            </p>
+
+                        </div>
+
+
+                        <label
+                            class="flex items-center gap-2
+                                   text-xs font-semibold
+                                   text-slate-600"
+                        >
+
+                            Enable
+
+                            <input
+                                type="checkbox"
+                                id="teachingRelatedCategoryToggle"
+                                checked
+                                class="w-5 h-5 text-indigo-600 rounded"
+                            >
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="flex gap-2 mt-4">
+
+                        <button
+                            onclick="setCategoryPositions('TEACHING RELATED', true)"
+                            class="flex-1 px-3 py-2 text-xs
+                                   bg-white border border-purple-200
+                                   rounded-lg hover:bg-purple-100"
+                        >
+                            Select All
+                        </button>
+
+                        <button
+                            onclick="setCategoryPositions('TEACHING RELATED', false)"
+                            class="flex-1 px-3 py-2 text-xs
+                                   bg-white border border-purple-200
+                                   rounded-lg hover:bg-purple-100"
+                        >
+                            Disable All
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="teachingRelatedList"
+                    class="p-3 space-y-2
+                           overflow-y-auto max-h-[450px]"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FOOTER -->
+
+        <div
+            class="px-6 py-5 border-t border-slate-200
+                   flex flex-col sm:flex-row
+                   justify-between gap-4"
+        >
+
+            <button
+                id="resetPositionFilterBtn"
+                class="px-5 py-2.5 border border-slate-300
+                       rounded-xl hover:bg-slate-50
+                       font-medium text-slate-700"
+            >
+                Reset All
+            </button>
+
+
+            <div class="flex gap-3">
+
+                <button
+                    id="cancelPositionFilterBtn"
+                    class="px-5 py-2.5 border border-slate-300
+                           rounded-xl hover:bg-slate-50
+                           font-medium text-slate-700"
+                >
+                    Cancel
+                </button>
+
+
+                <button
+                    id="applyPositionFilterBtn"
+                    class="px-5 py-2.5 bg-indigo-600
+                           hover:bg-indigo-700
+                           text-white rounded-xl font-medium"
+                >
+                    Apply Filter
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================================================
+     EXCEL UPLOAD LOADING OVERLAY
+========================================================= -->
+
+<div
+    id="excelLoadingOverlay"
+    class="hidden fixed inset-0 z-[100]
+           bg-slate-950/70 backdrop-blur-sm
+           flex items-center justify-center p-6"
+>
+    <div
+        class="w-full max-w-md bg-white rounded-3xl
+               shadow-2xl border border-slate-200
+               p-8 text-center transform transition-all"
+    >
+
+        <!-- Animated Excel Icon -->
+        <div class="relative mx-auto w-20 h-20 mb-6">
+
+            <div
+                class="absolute inset-0
+                       bg-blue-100 rounded-2xl
+                       animate-ping opacity-40"
+            ></div>
+
+            <div
+                class="relative w-20 h-20
+                       bg-gradient-to-br from-blue-600 to-indigo-600
+                       rounded-2xl flex items-center justify-center
+                       shadow-lg"
+            >
+                <span class="text-4xl">📊</span>
+            </div>
+
+        </div>
+
+
+        <!-- Title -->
+
+        <h2
+            id="excelLoadingTitle"
+            class="text-xl font-bold text-slate-800"
+        >
+            Loading Excel File
+        </h2>
+
+
+        <!-- Status -->
+
+        <p
+            id="excelLoadingMessage"
+            class="text-sm text-slate-500 mt-2"
+        >
+            Please wait while your workbook is being processed...
+        </p>
+
+
+        <!-- Progress Bar -->
+
+        <div
+            class="mt-6 h-2 bg-slate-100
+                   rounded-full overflow-hidden"
+        >
+
+            <div
+                id="excelLoadingProgress"
+                class="h-full w-1/4
+                       bg-gradient-to-r
+                       from-blue-500 via-indigo-500 to-purple-500
+                       rounded-full"
+                style="
+                    animation:
+                    excelProgress 1.5s ease-in-out infinite;
+                "
+            ></div>
+
+        </div>
+
+
+        <!-- Animated Steps -->
+
+        <div
+            class="mt-6 grid grid-cols-3 gap-2
+                   text-xs"
+        >
+
+            <div
+                id="loadingStep1"
+                class="px-3 py-2 rounded-lg
+                       bg-blue-50 text-blue-700
+                       font-medium"
+            >
+                📁 Reading
+            </div>
+
+            <div
+                id="loadingStep2"
+                class="px-3 py-2 rounded-lg
+                       bg-slate-50 text-slate-400
+                       font-medium"
+            >
+                📊 Processing
+            </div>
+
+            <div
+                id="loadingStep3"
+                class="px-3 py-2 rounded-lg
+                       bg-slate-50 text-slate-400
+                       font-medium"
+            >
+                ✓ Ready
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+<style>
+    @keyframes excelProgress {
+
+        0% {
+            transform: translateX(-120%);
+        }
+
+        50% {
+            transform: translateX(100%);
+        }
+
+        100% {
+            transform: translateX(400%);
+        }
+
+    }
+
+
+    @keyframes uploadPulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+    }
+
+
+    .upload-processing {
+        animation:
+            uploadPulse 1.2s ease-in-out infinite;
+    }
+</style>
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+<script>
+
+/* =========================================================
+   DEBUG MODE
+========================================================= */
+
+const DEBUG_MODE = true;
+
+function debugLog(...args) {
+    if (DEBUG_MODE) {
+        console.log("[POSITION SUMMARY]", ...args);
+    }
+}
+
+function debugWarn(...args) {
+    if (DEBUG_MODE) {
+        console.warn("[POSITION SUMMARY]", ...args);
+    }
+}
+
+function debugError(...args) {
+    console.error("[POSITION SUMMARY]", ...args);
+}
+
+function debugGroup(title, callback) {
+    if (!DEBUG_MODE) {
+        callback();
+        return;
+    }
+
+    console.group(`[POSITION SUMMARY] ${title}`);
+
+    try {
+        callback();
+    }
+    finally {
+        console.groupEnd();
+    }
+}
+
+
+/* =========================================================
+   GLOBAL ERROR DEBUGGER
+========================================================= */
+
+window.addEventListener("error", function(event) {
+
+    console.error(
+        "[POSITION SUMMARY] GLOBAL JAVASCRIPT ERROR",
+        {
+            message: event.message,
+            filename: event.filename,
+            line: event.lineno,
+            column: event.colno,
+            error: event.error
+        }
+    );
+
+});
+
+
+window.addEventListener(
+    "unhandledrejection",
+    function(event) {
+
+        console.error(
+            "[POSITION SUMMARY] UNHANDLED PROMISE ERROR",
+            event.reason
+        );
+
+    }
+);
+
+
+/* =========================================================
+   GLOBAL VARIABLES
+========================================================= */
+
+let workbook = null;
+
+let currentData = [];
+
+let generatedSummary = [];
+
+
+let positionFilters = {
+
+    "NON-TEACHING": {
+        enabled: true,
+        positions: {}
+    },
+
+    "TEACHING": {
+        enabled: true,
+        positions: {}
+    },
+
+    "TEACHING RELATED": {
+        enabled: true,
+        positions: {}
+    }
+
+};
+
+
+/* =========================================================
+   REQUIRED FUNCTIONAL DIVISION ORDER
+========================================================= */
+
+const functionalDivisionOrder = [
+
+    "OSDS",
+    "SGOD",
+    "CID",
+    "KINDER",
+    "ALS",
+    "ELEM",
+    "JHS",
+    "SHS"
+
+];
+
+
+/* =========================================================
+   PREDEFINED POSITION CATEGORIES
+========================================================= */
+
+const predefinedPositions = {
+
+    "TEACHING": [
+
+        "TEACHER I",
+        "TEACHER II",
+        "TEACHER II (CT)",
+        "TEACHER III",
+        "TEACHER III (CT)",
+        "TEACHER IV",
+        "TEACHER V",
+        "TEACHER VI",
+        "TEACHER VII",
+        "TEACHER VIII",
+
+        "MASTER TEACHER I",
+        "MASTER TEACHER II",
+        "MASTER TEACHER III",
+        "MASTER TEACHER IV",
+        "MASTER TEACHER V",
+        "MASTER TEACHER VI",
+        "MASTER TEACHER VII",
+        "MASTER TEACHER VIII",
+
+        "SPECIAL EDUCATION TEACHER",
+        "SPECIAL EDUCATION TEACHER I",
+        "SPECIAL EDUCATION TEACHER II",
+        "SPECIAL SCIENCE TEACHER I",
+
+        "KINDERGARTEN TEACHER",
+        "ELEMENTARY TEACHER",
+        "JUNIOR HIGH SCHOOL TEACHER",
+        "SENIOR HIGH SCHOOL TEACHER"
+
+    ],
+
+
+    "NON-TEACHING": [
+
+        "ACCOUNTANT",
+        "ACCOUNTANT I",
+        "ACCOUNTANT III",
+
+        "ADMINISTRATIVE AIDE",
+        "ADMINISTRATIVE AIDE I",
+        "ADMINISTRATIVE AIDE I (CT)",
+        "ADMINISTRATIVE AIDE II",
+        "ADMINISTRATIVE AIDE III",
+        "ADMINISTRATIVE AIDE IV",
+        "ADMINISTRATIVE AIDE IV (CT)",
+        "ADMINISTRATIVE AIDE V",
+        "ADMINISTRATIVE AIDE VI",
+
+        "ADMINISTRATIVE ASSISTANT I",
+        "ADMINISTRATIVE ASSISTANT II",
+        "ADMINISTRATIVE ASSISTANT III",
+        "ADMINISTRATIVE ASSISTANT IV",
+        "ADMINISTRATIVE ASSISTANT V",
+
+        "ADMINISTRATIVE OFFICER I",
+        "ADMINISTRATIVE OFFICER II",
+        "ADMINISTRATIVE OFFICER III",
+        "ADMINISTRATIVE OFFICER IV",
+        "ADMINISTRATIVE OFFICER V",
+        "ADMINISTRATIVE OFFICER VI",
+        "ADMINISTRATIVE OFFICER VII",
+
+        "BUDGET OFFICER",
+        "CASHIER",
+        "BOOKKEEPER",
+        "DISBURSING OFFICER",
+        "SUPPLY OFFICER",
+        "PROPERTY CUSTODIAN",
+
+        "UTILITY WORKER",
+        "DRIVER",
+
+        "SECURITY GUARD",
+        "SECURITY GUARD I",
+        "SECURITY GUARD II",
+
+        "CLERK",
+        "RECORDS OFFICER",
+        "HR OFFICER",
+        "HUMAN RESOURCE MANAGEMENT OFFICER",
+
+        "WATCHMAN I",
+        "FARM WORKER I",
+        "HANDICRAFT WORKER II",
+
+        "ATTORNEY I",
+        "ATTORNEY II",
+        "ATTORNEY III",
+
+        "LEGAL ASSISTANT I",
+
+        "REGISTRAR",
+        "REGISTRAR I",
+
+        "INFORMATION TECHNOLOGY OFFICER",
+        "INFORMATION TECHNOLOGY OFFICER I",
+
+        "PROJECT DEVELOPMENT OFFICER I",
+        "PROJECT DEVELOPMENT OFFICER II",
+
+        "DENTIST II",
+        "DENTAL AIDE (CT)",
+
+        "NURSE II",
+
+        "MEDICAL OFFICER II",
+        "MEDICAL OFFICER III",
+        "MEDICAL OFFICER III (CT)",
+
+        "ENGINEER I",
+        "ENGINEER II",
+        "ENGINEER III",
+
+        "LABORATORY TECHNICIAN I",
+
+        "PLANNING OFFICER I",
+        "PLANNING OFFICER II",
+        "PLANNING OFFICER III",
+
+        "SCHOOL ADMINISTRATIVE ASSISTANT"
+
+    ],
+
+
+    "TEACHING RELATED": [
+
+        "TEACHER AIDE",
+        "TEACHING ASSISTANT",
+        "LEARNING SUPPORT AIDE",
+
+        "ALS TEACHER",
+        "ALS FACILITATOR",
+        "ALS TEACHER/FACILITATOR",
+
+        "PUBLIC SCHOOLS DISTRICT SUPERVISOR",
+
+        "EDUCATION PROGRAM SPECIALIST",
+        "EDUCATION PROGRAM SPECIALIST II",
+        "EDUCATION PROGRAM SPECIALIST II (CT)",
+
+        "SENIOR EDUCATION PROGRAM SPECIALIST",
+
+        "EDUCATION PROGRAM SUPERVISOR",
+        "CHIEF EDUCATION SUPERVISOR",
+
+        "SCHOOL PRINCIPAL",
+        "SCHOOL PRINCIPAL I",
+        "SCHOOL PRINCIPAL II",
+        "SCHOOL PRINCIPAL III",
+        "SCHOOL PRINCIPAL IV",
+
+        "ASSISTANT SCHOOL PRINCIPAL I",
+        "ASSISTANT SCHOOL PRINCIPAL II",
+        "ASSISTANT SCHOOL PRINCIPAL III",
+
+        "HEAD TEACHER",
+        "HEAD TEACHER I",
+        "HEAD TEACHER II",
+        "HEAD TEACHER III",
+        "HEAD TEACHER IV",
+        "HEAD TEACHER V",
+        "HEAD TEACHER VI",
+
+        "CURRICULUM DEVELOPMENT SPECIALIST",
+
+        "SCHOOLS DIVISION SUPERINTENDENT",
+        "ASSISTANT SCHOOLS DIVISION SUPERINTENDENT",
+
+        "GUIDANCE COUNSELOR",
+        "GUIDANCE COUNSELOR I",
+        "GUIDANCE COUNSELOR II",
+        "GUIDANCE COUNSELOR III",
+
+        "GUIDANCE COORDINATOR",
+        "GUIDANCE COORDINATOR I",
+        "GUIDANCE COORDINATOR II",
+        "GUIDANCE COORDINATOR III",
+        "GUIDANCE COORDINATOR III (CT)",
+
+        "SCHOOL COUNSELOR ASSOCIATE",
+        "SCHOOL COUNSELOR ASSOCIATE I",
+
+        "LIBRARIAN I",
+        "LIBRARIAN II",
+
+        "SCHOOL LIBRARIAN I",
+        "SCHOOL LIBRARIAN II",
+        "SCHOOL LIBRARIAN III",
+
+        "SCHOOL PSYCHOLOGIST"
+
+    ]
+
+};
+
+
+/* =========================================================
+   DOM ELEMENT HELPER
+========================================================= */
+
+function getElement(id, required = true) {
+
+    const element = document.getElementById(id);
+
+    if (!element) {
+
+        if (required) {
+
+            debugError(
+                `REQUIRED HTML ELEMENT NOT FOUND: #${id}`
+            );
+
+        }
+
+        return null;
+
+    }
+
+    return element;
+
+}
+
+
+/* =========================================================
+   CHECK REQUIRED HTML
+========================================================= */
+
+function checkRequiredElements() {
+
+    const requiredIds = [
+
+        "excelFile",
+        "sheetSelect",
+        "generateBtn",
+        "summaryDate",
+
+        "fileInfo",
+        "uploadedFileName",
+        "uploadedFileDetails",
+
+        "configurationSection",
+        "detectedColumns",
+        "columnInfo",
+
+        "positionFilterBtn",
+        "positionFilterModal",
+
+        "closePositionModalBtn",
+        "cancelPositionFilterBtn",
+        "applyPositionFilterBtn",
+        "resetPositionFilterBtn",
+
+        "nonTeachingList",
+        "teachingList",
+        "teachingRelatedList",
+
+        "nonTeachingCount",
+        "teachingCount",
+        "teachingRelatedCount",
+
+        "nonTeachingCategoryToggle",
+        "teachingCategoryToggle",
+        "teachingRelatedCategoryToggle",
+
+        "nonTeachingPanel",
+        "teachingPanel",
+        "teachingRelatedPanel",
+
+        "positionSearch",
+
+        "summaryTableBody",
+        "summaryTableFooter",
+
+        "totalFilledCard",
+        "totalUnfilledCard",
+        "totalPositionsCard",
+        "vacancyRateCard",
+        "filledRateCard",
+
+        "summaryAsOf",
+        "summaryCards",
+        "summarySection",
+
+        "exportBtn"
+
+    ];
+
+    const missing = [];
+
+    requiredIds.forEach(id => {
+
+        if (!document.getElementById(id)) {
+
+            missing.push(id);
+
+        }
+
+    });
+
+
+    if (missing.length) {
+
+        console.error(
+            "================================================"
+        );
+
+        console.error(
+            "MISSING HTML ELEMENTS"
+        );
+
+        console.error(
+            "The script cannot fully operate because these IDs are missing:"
+        );
+
+        missing.forEach(id => {
+
+            console.error(
+                `Missing: #${id}`
+            );
+
+        });
+
+        console.error(
+            "================================================"
+        );
+
+        return false;
+
+    }
+
+
+    debugLog(
+        "All required HTML elements were found."
+    );
+
+    return true;
+
+}
+
+
+/* =========================================================
+   CURRENT MONTH
+========================================================= */
+
+function initializeDate() {
+
+    const dateElement =
+        getElement("summaryDate");
+
+    if (!dateElement) {
+        return;
+    }
+
+    const today = new Date();
+
+    dateElement.value =
+        `${today.getFullYear()}-${String(
+            today.getMonth() + 1
+        ).padStart(2, "0")}`;
+
+}
+
+
+/* =========================================================
+   NORMALIZE TEXT
+========================================================= */
+
+function normalize(value) {
+
+    return String(value ?? "")
+        .toUpperCase()
+        .replace(/\(CT\)/gi, "")
+        .replace(/\bCT\b/gi, "")
+        .replace(/[^A-Z0-9]/g, "");
+
+}
+
+
+/* =========================================================
+   RESET FILTERS
+========================================================= */
+
+function resetAllPositionFilters() {
+
+    positionFilters = {
+
+        "NON-TEACHING": {
+
+            enabled: true,
+            positions: {}
+
+        },
+
+        "TEACHING": {
+
+            enabled: true,
+            positions: {}
+
+        },
+
+        "TEACHING RELATED": {
+
+            enabled: true,
+            positions: {}
+
+        }
+
+    };
+
+    debugLog(
+        "Position filters reset."
+    );
+
+}
+
+
+/* =========================================================
+   UPLOAD EXCEL
+========================================================= */
+
+/* =========================================================
+   EXCEL LOADING UI
+========================================================= */
+
+function showExcelLoading(
+    title = "Loading Excel File",
+    message = "Please wait while your workbook is being processed..."
+) {
+
+    const overlay =
+        getElement(
+            "excelLoadingOverlay"
+        );
+
+    const loadingTitle =
+        getElement(
+            "excelLoadingTitle"
+        );
+
+    const loadingMessage =
+        getElement(
+            "excelLoadingMessage"
+        );
+
+    if (loadingTitle) {
+
+        loadingTitle.textContent =
+            title;
+
+    }
+
+    if (loadingMessage) {
+
+        loadingMessage.textContent =
+            message;
+
+    }
+
+    if (overlay) {
+
+        overlay.classList.remove(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+function hideExcelLoading() {
+
+    const overlay =
+        getElement(
+            "excelLoadingOverlay"
+        );
+
+    if (overlay) {
+
+        overlay.classList.add(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+function updateExcelLoadingStep(
+    step
+) {
+
+    const steps = [
+
+        getElement("loadingStep1"),
+        getElement("loadingStep2"),
+        getElement("loadingStep3")
+
+    ];
+
+
+    steps.forEach(
+        (element, index) => {
+
+            if (!element) {
+                return;
+            }
+
+            element.classList.remove(
+                "bg-blue-50",
+                "text-blue-700",
+                "bg-indigo-50",
+                "text-indigo-700",
+                "bg-emerald-50",
+                "text-emerald-700",
+                "bg-slate-50",
+                "text-slate-400"
+            );
+
+
+            if (index < step) {
+
+                element.classList.add(
+                    "bg-emerald-50",
+                    "text-emerald-700"
+                );
+
+            }
+
+            else if (index === step) {
+
+                element.classList.add(
+                    "bg-indigo-50",
+                    "text-indigo-700"
+                );
+
+            }
+
+            else {
+
+                element.classList.add(
+                    "bg-slate-50",
+                    "text-slate-400"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   UPLOAD EXCEL
+========================================================= */
+
+async function handleExcelUpload(event) {
+
+    const file =
+        event.target.files[0];
+
+
+    if (!file) {
+
+        debugWarn(
+            "No file selected."
+        );
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       SHOW LOADING SCREEN IMMEDIATELY
+    ===================================================== */
+
+    showExcelLoading(
+        "Loading Excel File",
+        `Opening ${file.name}...`
+    );
+
+    updateExcelLoadingStep(0);
+
+
+    /* Give browser time to render loading overlay */
+
+    await new Promise(
+        resolve =>
+            requestAnimationFrame(
+                () => resolve()
+            )
+    );
+
+
+    debugGroup(
+        "EXCEL UPLOAD",
+        function() {
+
+            debugLog(
+                "Upload event received."
+            );
+
+            debugLog(
+                "Selected file:",
+                file.name
+            );
+
+            debugLog(
+                "File size:",
+                file.size,
+                "bytes"
+            );
+
+            debugLog(
+                "File type:",
+                file.type
+            );
+
+        }
+    );
+
+
+    if (
+        typeof XLSX ===
+        "undefined"
+    ) {
+
+        debugError(
+            "XLSX / SheetJS is NOT loaded."
+        );
+
+        hideExcelLoading();
+
+        alert(
+            "Excel processing library is missing.\n\n" +
+            "Please make sure SheetJS XLSX is loaded before this script."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        /* =================================================
+           STEP 1 — READ FILE
+        ================================================= */
+
+        showExcelLoading(
+            "Reading Excel File",
+            "Reading your workbook into memory..."
+        );
+
+        updateExcelLoadingStep(0);
+
+
+        const data =
+            await file.arrayBuffer();
+
+
+        debugLog(
+            "ArrayBuffer successfully created.",
+            data.byteLength,
+            "bytes"
+        );
+
+
+        /* =================================================
+           STEP 2 — PROCESS WORKBOOK
+        ================================================= */
+
+        showExcelLoading(
+            "Processing Workbook",
+            "Detecting worksheets and preparing your data..."
+        );
+
+        updateExcelLoadingStep(1);
+
+
+        /*
+         * Small delay allows the UI to visibly update
+         * before SheetJS performs the heavier operation.
+         */
+
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    100
+                )
+        );
+
+
+        workbook =
+            XLSX.read(
+                data,
+                {
+                    type: "array"
+                }
+            );
+
+
+        if (!workbook) {
+
+            throw new Error(
+                "XLSX.read() returned no workbook."
+            );
+
+        }
+
+
+        if (
+            !workbook.SheetNames ||
+            workbook.SheetNames.length === 0
+        ) {
+
+            throw new Error(
+                "Workbook contains no worksheets."
+            );
+
+        }
+
+
+        debugLog(
+            "Workbook successfully loaded."
+        );
+
+        debugLog(
+            "Worksheets:",
+            workbook.SheetNames
+        );
+
+
+        /* =================================================
+           UPDATE FILE INFORMATION
+        ================================================= */
+
+        const fileInfo =
+            getElement(
+                "fileInfo"
+            );
+
+
+        if (fileInfo) {
+
+            fileInfo.classList.remove(
+                "hidden"
+            );
+
+        }
+
+
+        const uploadedFileName =
+            getElement(
+                "uploadedFileName"
+            );
+
+
+        if (uploadedFileName) {
+
+            uploadedFileName.textContent =
+                file.name;
+
+        }
+
+
+        const uploadedFileDetails =
+            getElement(
+                "uploadedFileDetails"
+            );
+
+
+        if (uploadedFileDetails) {
+
+            uploadedFileDetails.textContent =
+                `${workbook.SheetNames.length} worksheet(s) detected • ` +
+                `${formatFileSize(file.size)}`;
+
+        }
+
+
+        /* =================================================
+           LOAD SHEETS
+        ================================================= */
+
+        populateSheets();
+
+
+        resetAllPositionFilters();
+
+
+        /* =================================================
+           STEP 3 — READY
+        ================================================= */
+
+        showExcelLoading(
+            "Excel File Ready",
+            "Your workbook has been successfully loaded."
+        );
+
+        updateExcelLoadingStep(2);
+
+
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    600
+                )
+        );
+
+
+        /* =================================================
+           SHOW CONFIGURATION
+        ================================================= */
+
+        const configurationSection =
+            getElement(
+                "configurationSection"
+            );
+
+
+        if (configurationSection) {
+
+            configurationSection.classList.remove(
+                "hidden"
+            );
+
+            configurationSection.classList.add(
+                "animate-fade-in"
+            );
+
+        }
+
+
+        /* =================================================
+           HIDE LOADING
+        ================================================= */
+
+        hideExcelLoading();
+
+
+        debugLog(
+            "Excel upload process completed successfully."
+        );
+
+    }
+    catch (error) {
+
+        debugError(
+            "EXCEL READ ERROR:",
+            error
+        );
+
+
+        hideExcelLoading();
+
+
+        alert(
+            "Unable to read the Excel file.\n\n" +
+            "Check the browser console (F12) for the exact error."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   POPULATE SHEETS
+========================================================= */
+
+function populateSheets() {
+
+    if (!workbook) {
+
+        debugError(
+            "populateSheets() called but workbook is null."
+        );
+
+        return;
+
+    }
+
+
+    const sheetSelect =
+        getElement("sheetSelect");
+
+    if (!sheetSelect) {
+        return;
+    }
+
+
+    sheetSelect.innerHTML = "";
+
+
+    workbook.SheetNames.forEach(
+        sheetName => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                sheetName;
+
+            option.textContent =
+                sheetName;
+
+            sheetSelect.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    const mergedSheet =
+        workbook.SheetNames.find(
+            name =>
+                name
+                    .toLowerCase()
+                    .includes("merged")
+        );
+
+
+    if (mergedSheet) {
+
+        sheetSelect.value =
+            mergedSheet;
+
+        debugLog(
+            "Automatically selected merged sheet:",
+            mergedSheet
+        );
+
+    }
+    else {
+
+        debugLog(
+            "No sheet containing 'merged' was found."
+        );
+
+    }
+
+
+    loadWorksheet();
+
+}
+
+
+/* =========================================================
+   LOAD WORKSHEET
+========================================================= */
+
+function loadWorksheet() {
+
+    if (!workbook) {
+
+        debugError(
+            "loadWorksheet() called without workbook."
+        );
+
+        return;
+
+    }
+
+
+    const sheetSelect =
+        getElement("sheetSelect");
+
+    if (!sheetSelect) {
+        return;
+    }
+
+
+    const sheetName =
+        sheetSelect.value;
+
+
+    debugGroup(
+        `LOAD WORKSHEET: ${sheetName}`,
+        function() {
+
+            debugLog(
+                "Selected sheet:",
+                sheetName
+            );
+
+        }
+    );
+
+
+    if (!sheetName) {
+
+        debugError(
+            "No worksheet selected."
+        );
+
+        currentData = [];
+
+        return;
+
+    }
+
+
+    const worksheet =
+        workbook.Sheets[sheetName];
+
+
+    if (!worksheet) {
+
+        debugError(
+            "Worksheet not found:",
+            sheetName
+        );
+
+        currentData = [];
+
+        return;
+
+    }
+
+
+    const rawData =
+        XLSX.utils.sheet_to_json(
+            worksheet,
+            {
+                header: 1,
+                defval: ""
+            }
+        );
+
+
+    debugLog(
+        "Raw rows detected:",
+        rawData.length
+    );
+
+
+    if (!rawData.length) {
+
+        debugWarn(
+            "Worksheet is empty."
+        );
+
+        currentData = [];
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       DETECT HEADER ROW
+    ===================================================== */
+
+    let headerRowIndex = 0;
+
+
+    const searchWords = [
+
+        "POSITION",
+        "INCUMBENT",
+        "NAME",
+        "CATEGORY",
+        "DIVISION",
+        "OFFICE",
+        "PLANTILLA"
+
+    ];
+
+
+    let bestHeaderScore = 0;
+
+
+    for (
+        let i = 0;
+        i < Math.min(rawData.length, 40);
+        i++
+    ) {
+
+        const rowText =
+            rawData[i]
+                .map(value =>
+                    String(value ?? "")
+                )
+                .join(" ")
+                .toUpperCase();
+
+
+        const matches =
+            searchWords.filter(
+                word =>
+                    rowText.includes(word)
+            );
+
+
+        debugLog(
+            `Header scan row ${i}:`,
+            {
+                text: rowText,
+                matches
+            }
+        );
+
+
+        if (
+            matches.length >
+            bestHeaderScore
+        ) {
+
+            bestHeaderScore =
+                matches.length;
+
+            headerRowIndex =
+                i;
+
+        }
+
+    }
+
+
+    debugLog(
+        "Selected header row:",
+        headerRowIndex
+    );
+
+    debugLog(
+        "Header score:",
+        bestHeaderScore
+    );
+
+
+    const headers =
+        rawData[headerRowIndex]
+            .map(
+                header =>
+                    String(
+                        header ?? ""
+                    ).trim()
+            );
+
+
+    debugLog(
+        "Detected headers:",
+        headers
+    );
+
+
+    if (
+        !headers.some(
+            header =>
+                header !== ""
+        )
+    ) {
+
+        debugError(
+            "Selected header row contains no usable headers."
+        );
+
+    }
+
+
+    /* =====================================================
+       CONVERT ROWS TO OBJECTS
+    ===================================================== */
+
+    currentData =
+        rawData
+            .slice(
+                headerRowIndex + 1
+            )
+            .filter(
+                row =>
+                    row.some(
+                        value =>
+                            String(
+                                value ?? ""
+                            ).trim() !== ""
+                    )
+            )
+            .map(
+                row => {
+
+                    const object = {};
+
+
+                    headers.forEach(
+                        (header, index) => {
+
+                            if (header) {
+
+                                object[header] =
+                                    row[index] ?? "";
+
+                            }
+
+                        }
+                    );
+
+
+                    return object;
+
+                }
+            );
+
+
+    debugLog(
+        "Converted data rows:",
+        currentData.length
+    );
+
+
+    if (currentData.length > 0) {
+
+        debugLog(
+            "First data row:",
+            currentData[0]
+        );
+
+    }
+
+
+    displayDetectedColumns(
+        headers
+    );
+
+
+    /* =====================================================
+       COLUMN DETECTION
+    ===================================================== */
+
+    const positionColumn =
+        getPositionColumn();
+
+    const incumbentColumn =
+        getIncumbentColumn();
+
+    const categoryColumn =
+        getCategoryColumn();
+
+    const divisionColumn =
+        getDivisionColumn();
+
+
+    debugGroup(
+        "COLUMN DETECTION RESULTS",
+        function() {
+
+            debugLog(
+                "Position column:",
+                positionColumn
+            );
+
+            debugLog(
+                "Incumbent column:",
+                incumbentColumn
+            );
+
+            debugLog(
+                "Category column:",
+                categoryColumn
+            );
+
+            debugLog(
+                "Division / Plantilla column:",
+                divisionColumn
+            );
+
+        }
+    );
+
+
+    /* =====================================================
+       DIAGNOSTIC WARNINGS
+    ===================================================== */
+
+    if (!positionColumn) {
+
+        debugError(
+            "POSITION COLUMN WAS NOT DETECTED."
+        );
+
+    }
+
+
+    if (!incumbentColumn) {
+
+        debugError(
+            "INCUMBENT COLUMN WAS NOT DETECTED."
+        );
+
+    }
+
+
+    if (!categoryColumn) {
+
+        debugWarn(
+            "CATEGORY COLUMN WAS NOT DETECTED."
+        );
+
+        debugWarn(
+            "The system will attempt to determine category from position."
+        );
+
+    }
+
+
+    if (!divisionColumn) {
+
+        debugWarn(
+            "DIVISION / PLANTILLA COLUMN WAS NOT DETECTED."
+        );
+
+        debugWarn(
+            "Rows will default to JHS according to the current requirement."
+        );
+
+    }
+
+
+    /* =====================================================
+       SAMPLE DATA DIAGNOSTIC
+    ===================================================== */
+
+    if (currentData.length) {
+
+        debugGroup(
+            "FIRST 5 DATA ROWS",
+            function() {
+
+                currentData
+                    .slice(0, 5)
+                    .forEach(
+                        (row, index) => {
+
+                            console.log(
+                                `Row ${index + 1}:`,
+                                row
+                            );
+
+                        }
+                    );
+
+            }
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DISPLAY DETECTED COLUMNS
+========================================================= */
+
+function displayDetectedColumns(headers) {
+
+    const container =
+        getElement(
+            "detectedColumns"
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    headers.forEach(
+        header => {
+
+            const badge =
+                document.createElement(
+                    "span"
+                );
+
+
+            badge.className =
+                "px-3 py-1 bg-blue-50 text-blue-700 " +
+                "border border-blue-100 rounded-full " +
+                "text-xs font-medium";
+
+
+            badge.textContent =
+                header || "(Empty)";
+
+
+            container.appendChild(
+                badge
+            );
+
+        }
+    );
+
+
+    const columnInfo =
+        getElement(
+            "columnInfo"
+        );
+
+    if (columnInfo) {
+
+        columnInfo.classList.remove(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   FIND COLUMN
+========================================================= */
+
+function findColumn(keywords) {
+
+    if (!currentData.length) {
+
+        debugWarn(
+            "findColumn() called but currentData is empty."
+        );
+
+        return null;
+
+    }
+
+
+    const columns =
+        Object.keys(
+            currentData[0]
+        );
+
+
+    debugLog(
+        "Searching columns:",
+        columns
+    );
+
+
+    /* =====================================================
+       EXACT MATCH
+    ===================================================== */
+
+    for (
+        const keyword of keywords
+    ) {
+
+        const normalizedKeyword =
+            normalize(keyword);
+
+
+        const column =
+            columns.find(
+                columnName =>
+                    normalize(
+                        columnName
+                    ) ===
+                    normalizedKeyword
+            );
+
+
+        if (column) {
+
+            debugLog(
+                `Exact column match: "${keyword}" -> "${column}"`
+            );
+
+            return column;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       PARTIAL MATCH
+    ===================================================== */
+
+    for (
+        const keyword of keywords
+    ) {
+
+        const normalizedKeyword =
+            normalize(keyword);
+
+
+        const column =
+            columns.find(
+                columnName =>
+                    normalize(
+                        columnName
+                    ).includes(
+                        normalizedKeyword
+                    )
+            );
+
+
+        if (column) {
+
+            debugLog(
+                `Partial column match: "${keyword}" -> "${column}"`
+            );
+
+            return column;
+
+        }
+
+    }
+
+
+    debugWarn(
+        "No column found for keywords:",
+        keywords
+    );
+
+
+    return null;
+
+}
+
+
+/* =========================================================
+   POSITION COLUMN
+========================================================= */
+
+function getPositionColumn() {
+
+    return findColumn([
+
+        "POSITION TITLE",
+        "POSITION",
+        "POSITION NAME",
+        "POSITION DESIGNATION",
+        "POSITION/DESIGNATION",
+        "DESIGNATION",
+        "ITEM DESCRIPTION",
+        "POSITION TITLE/DESIGNATION",
+        "PLANTILLA POSITION",
+        "POSITION DESCRIPTION"
+
+    ]);
+
+}
+
+
+/* =========================================================
+   INCUMBENT COLUMN
+========================================================= */
+
+function getIncumbentColumn() {
+
+    return findColumn([
+
+        "NAME OF INCUMBENT",
+        "NAME OF INCUMBENT/S",
+        "INCUMBENT",
+        "NAME INCUMBENT",
+        "NAME",
+        "EMPLOYEE NAME",
+        "NAME OF EMPLOYEE",
+        "PERSONNEL",
+        "EMPLOYEE",
+        "OCCUPANT",
+        "NAME OF OCCUPANT",
+        "CURRENT INCUMBENT"
+
+    ]);
+
+}
+
+
+/* =========================================================
+   CATEGORY COLUMN
+========================================================= */
+
+function getCategoryColumn() {
+
+    return findColumn([
+
+        "CATEGORY",
+        "POSITION CATEGORY",
+        "EMPLOYEE CATEGORY",
+        "PERSONNEL CATEGORY",
+        "TYPE",
+        "POSITION TYPE",
+        "CLASSIFICATION"
+
+    ]);
+
+}
+
+
+/* =========================================================
+   DIVISION / PLANTILLA COLUMN
+========================================================= */
+
+function getDivisionColumn() {
+
+    return findColumn([
+
+        "FUNCTIONAL DIVISION",
+        "FUNCTIONAL DIVISION/OFFICE",
+
+        "PLANTILLA ASSIGNMENT",
+        "PLANTILLA ASSIGNMENT/OFFICE",
+
+        "PLANTILLA",
+        "PLANTILLA OFFICE",
+
+        "DIVISION",
+
+        "PROGRAM",
+        "LEVEL",
+
+        "OFFICE",
+        "OFFICE/DIVISION",
+
+        "SECTION",
+        "UNIT"
+
+    ]);
+
+}
+
+
+/* =========================================================
+   NORMALIZE FUNCTIONAL DIVISION
+========================================================= */
+
+function normalizeDivision(value) {
+
+    const text =
+        String(value ?? "")
+            .trim()
+            .toUpperCase()
+            .replace(/\./g, "")
+            .replace(/\s+/g, " ");
+
+
+    if (!text) {
+
+        return "JHS";
+
+    }
+
+
+    /* OSDS */
+
+    if (
+        text.includes(
+            "OFFICE OF THE SCHOOLS DIVISION SUPERINTENDENT"
+        ) ||
+        text.includes("OSDS")
+    ) {
+
+        return "OSDS";
+
+    }
+
+
+    /* SGOD */
+
+    if (
+        text.includes(
+            "SCHOOL GOVERNANCE AND OPERATIONS DIVISION"
+        ) ||
+        text.includes("SGOD")
+    ) {
+
+        return "SGOD";
+
+    }
+
+
+    /* CID */
+
+    if (
+        text.includes(
+            "CURRICULUM IMPLEMENTATION DIVISION"
+        ) ||
+        text.includes("CID")
+    ) {
+
+        return "CID";
+
+    }
+
+
+    /* ALS */
+
+    if (
+        text.includes(
+            "DIVISION OF CAVITE - ALS"
+        ) ||
+        text.includes(
+            "DIVISION OF CAVITE-ALS"
+        ) ||
+        text === "ALS"
+    ) {
+
+        return "ALS";
+
+    }
+
+
+    /* SHS */
+
+    if (
+        text.includes(
+            "DIVISION OF CAVITE - SHS"
+        ) ||
+        text.includes(
+            "DIVISION OF CAVITE-SHS"
+        ) ||
+        text === "SHS"
+    ) {
+
+        return "SHS";
+
+    }
+
+
+    /* ELEMENTARY */
+
+    if (
+        text.includes(
+            "ELEMENTARY EDUCATION"
+        )
+    ) {
+
+        return "ELEM";
+
+    }
+
+
+    /* KINDERGARTEN */
+
+    if (
+        text.includes(
+            "KINDERGARTEN EDUCATION"
+        )
+    ) {
+
+        return "KINDER";
+
+    }
+
+
+    /* DEFAULT */
+
+    return "JHS";
+
+}
+
+
+/* =========================================================
+   NORMALIZE CATEGORY
+========================================================= */
+
+function normalizeCategory(category) {
+
+    const value =
+        String(category ?? "")
+            .trim()
+            .toUpperCase();
+
+
+    if (!value) {
+
+        return null;
+
+    }
+
+
+    if (
+        value.includes(
+            "TEACHING RELATED"
+        ) ||
+        value.includes(
+            "TEACHER RELATED"
+        ) ||
+        value.includes(
+            "TEACHING-RELATED"
+        )
+    ) {
+
+        return "TEACHING RELATED";
+
+    }
+
+
+    if (
+        value.includes(
+            "NON-TEACHING"
+        ) ||
+        value.includes(
+            "NON TEACHING"
+        ) ||
+        value.includes(
+            "NONTEACHING"
+        )
+    ) {
+
+        return "NON-TEACHING";
+
+    }
+
+
+    if (
+        value === "TEACHING" ||
+        value.includes("TEACHING")
+    ) {
+
+        return "TEACHING";
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =========================================================
+   DETERMINE CATEGORY
+========================================================= */
+
+function determineCategory(
+    position,
+    excelCategory = ""
+) {
+
+    /* =====================================================
+       FIRST: EXCEL CATEGORY
+    ===================================================== */
+
+    const category =
+        normalizeCategory(
+            excelCategory
+        );
+
+
+    if (category) {
+
+        return category;
+
+    }
+
+
+    /* =====================================================
+       POSITION
+    ===================================================== */
+
+    const normalizedPosition =
+        normalize(position);
+
+
+    if (!normalizedPosition) {
+
+        return null;
+
+    }
+
+
+    /* =====================================================
+       TEACHING RELATED FIRST
+    ===================================================== */
+
+    for (
+        const item of
+        predefinedPositions[
+            "TEACHING RELATED"
+        ]
+    ) {
+
+        if (
+            normalizedPosition ===
+            normalize(item)
+        ) {
+
+            return "TEACHING RELATED";
+
+        }
+
+    }
+
+
+    /* =====================================================
+       TEACHING
+    ===================================================== */
+
+    for (
+        const item of
+        predefinedPositions[
+            "TEACHING"
+        ]
+    ) {
+
+        if (
+            normalizedPosition ===
+            normalize(item)
+        ) {
+
+            return "TEACHING";
+
+        }
+
+    }
+
+
+    /* =====================================================
+       NON-TEACHING
+    ===================================================== */
+
+    for (
+        const item of
+        predefinedPositions[
+            "NON-TEACHING"
+        ]
+    ) {
+
+        if (
+            normalizedPosition ===
+            normalize(item)
+        ) {
+
+            return "NON-TEACHING";
+
+        }
+
+    }
+
+
+    /* =====================================================
+       AUTOMATIC TEACHING
+    ===================================================== */
+
+    if (
+        normalizedPosition.startsWith(
+            "TEACHER"
+        ) ||
+        normalizedPosition.startsWith(
+            "MASTERTEACHER"
+        )
+    ) {
+
+        return "TEACHING";
+
+    }
+
+
+    /* =====================================================
+       NON-TEACHING KEYWORDS
+    ===================================================== */
+
+    const nonTeachingWords = [
+
+        "ADMINISTRATIVE",
+        "ACCOUNTANT",
+        "ACCOUNTING",
+        "BUDGET",
+        "CASHIER",
+        "BOOKKEEPER",
+        "CLERK",
+        "DRIVER",
+        "UTILITY",
+        "SECURITY",
+        "SUPPLY",
+        "PROPERTY",
+        "HUMANRESOURCE",
+        "HRMO"
+
+    ];
+
+
+    if (
+        nonTeachingWords.some(
+            word =>
+                normalizedPosition.includes(
+                    word
+                )
+        )
+    ) {
+
+        return "NON-TEACHING";
+
+    }
+
+
+    /* =====================================================
+       TEACHING RELATED KEYWORDS
+    ===================================================== */
+
+    const teachingRelatedWords = [
+
+        "PRINCIPAL",
+        "HEADTEACHER",
+        "TEACHERAIDE",
+        "TEACHINGASSISTANT",
+        "LEARNINGSUPPORT",
+        "ALSTEACHER",
+        "ALSFACILITATOR",
+        "EDUCATIONPROGRAMSPECIALIST",
+        "CURRICULUMDEVELOPMENT",
+        "GUIDANCE",
+        "SCHOOLNURSE",
+        "SCHOOLDENTIST"
+
+    ];
+
+
+    if (
+        teachingRelatedWords.some(
+            word =>
+                normalizedPosition.includes(
+                    word
+                )
+        )
+    ) {
+
+        return "TEACHING RELATED";
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =========================================================
+   VACANCY DETECTION
+========================================================= */
+
+function isVacant(value) {
+
+    const text =
+        String(value ?? "")
+            .trim()
+            .toUpperCase();
+
+
+    if (!text) {
+
+        return true;
+
+    }
+
+
+    const vacantValues = [
+
+        "VACANT",
+        "VACANCY",
+        "UNFILLED",
+        "UNFILLED POSITION",
+        "NO INCUMBENT",
+        "NONE",
+        "N/A",
+        "NA",
+        "-"
+
+    ];
+
+
+    return vacantValues.includes(
+        text
+    );
+
+}
+
+
+/* =========================================================
+   OPEN POSITION FILTER
+========================================================= */
+
+function openPositionFilter() {
+
+    if (!currentData.length) {
+
+        alert(
+            "Please upload and load an Excel worksheet first."
+        );
+
+        debugWarn(
+            "Cannot open position filter because currentData is empty."
+        );
+
+        return;
+
+    }
+
+
+    renderPositionLists();
+
+
+    const modal =
+        getElement(
+            "positionFilterModal"
+        );
+
+    if (modal) {
+
+        modal.classList.remove(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CLOSE MODAL
+========================================================= */
+
+function closePositionFilterModal() {
+
+    const modal =
+        getElement(
+            "positionFilterModal"
+        );
+
+    if (modal) {
+
+        modal.classList.add(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   RENDER POSITION LISTS
+========================================================= */
+
+function renderPositionLists() {
+
+    const positionColumn =
+        getPositionColumn();
+
+    const categoryColumn =
+        getCategoryColumn();
+
+
+    if (!positionColumn) {
+
+        alert(
+            "POSITION TITLE column could not be detected.\n\n" +
+            "Open the browser console with F12 to see the detected columns."
+        );
+
+        return;
+
+    }
+
+
+    const positions = {
+
+        "NON-TEACHING":
+            new Set(),
+
+        "TEACHING":
+            new Set(),
+
+        "TEACHING RELATED":
+            new Set()
+
+    };
+
+
+    let classifiedRows = 0;
+    let unclassifiedRows = 0;
+
+
+    currentData.forEach(
+        (row, index) => {
+
+            const position =
+                String(
+                    row[positionColumn] ?? ""
+                ).trim();
+
+
+            if (!position) {
+
+                debugWarn(
+                    `Filter scan: Row ${index + 2} has no position.`
+                );
+
+                return;
+
+            }
+
+
+            const category =
+                determineCategory(
+                    position,
+                    categoryColumn
+                        ? row[categoryColumn]
+                        : ""
+                );
+
+
+            if (
+                category &&
+                positions[category]
+            ) {
+
+                positions[category]
+                    .add(position);
+
+                classifiedRows++;
+
+            }
+            else {
+
+                unclassifiedRows++;
+
+                debugWarn(
+                    "FILTER: Unclassified position:",
+                    {
+                        row: index + 2,
+                        position,
+                        excelCategory:
+                            categoryColumn
+                                ? row[categoryColumn]
+                                : ""
+                    }
+                );
+
+            }
+
+        }
+    );
+
+
+    debugLog(
+        "Filter classification:",
+        {
+            classifiedRows,
+            unclassifiedRows
+        }
+    );
+
+
+    /* Add predefined positions */
+
+    Object.keys(
+        predefinedPositions
+    ).forEach(
+        category => {
+
+            predefinedPositions[
+                category
+            ].forEach(
+                position => {
+
+                    positions[category]
+                        .add(position);
+
+                }
+            );
+
+        }
+    );
+
+
+    /* Initialize states */
+
+    Object.keys(positions)
+        .forEach(
+            category => {
+
+                positions[category]
+                    .forEach(
+                        position => {
+
+                            if (
+                                positionFilters[
+                                    category
+                                ].positions[
+                                    position
+                                ] === undefined
+                            ) {
+
+                                positionFilters[
+                                    category
+                                ].positions[
+                                    position
+                                ] = true;
+
+                            }
+
+                        }
+                    );
+
+            }
+        );
+
+
+    renderCategoryPositions(
+        "NON-TEACHING",
+        [...positions["NON-TEACHING"]],
+        "nonTeachingList",
+        "nonTeachingCount"
+    );
+
+
+    renderCategoryPositions(
+        "TEACHING",
+        [...positions["TEACHING"]],
+        "teachingList",
+        "teachingCount"
+    );
+
+
+    renderCategoryPositions(
+        "TEACHING RELATED",
+        [...positions["TEACHING RELATED"]],
+        "teachingRelatedList",
+        "teachingRelatedCount"
+    );
+
+
+    const toggleMap = {
+
+        "NON-TEACHING":
+            "nonTeachingCategoryToggle",
+
+        "TEACHING":
+            "teachingCategoryToggle",
+
+        "TEACHING RELATED":
+            "teachingRelatedCategoryToggle"
+
+    };
+
+
+    Object.keys(toggleMap)
+        .forEach(
+            category => {
+
+                const toggle =
+                    getElement(
+                        toggleMap[category]
+                    );
+
+                if (toggle) {
+
+                    toggle.checked =
+                        positionFilters[
+                            category
+                        ].enabled;
+
+                }
+
+                updateCategoryState(
+                    category
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   RENDER CATEGORY POSITIONS
+========================================================= */
+
+function renderCategoryPositions(
+    category,
+    positions,
+    containerId,
+    countId
+) {
+
+    const container =
+        getElement(
+            containerId
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    positions
+        .sort(
+            (a, b) =>
+                a.localeCompare(b)
+        )
+        .forEach(
+            position => {
+
+                const enabled =
+                    positionFilters[
+                        category
+                    ].positions[
+                        position
+                    ] !== false;
+
+
+                const item =
+                    document.createElement(
+                        "label"
+                    );
+
+
+                item.className =
+                    "position-item flex items-center gap-3 " +
+                    "p-3 border border-slate-200 rounded-xl " +
+                    "hover:bg-slate-50 cursor-pointer";
+
+
+                item.dataset.category =
+                    category;
+
+
+                item.dataset.position =
+                    position.toLowerCase();
+
+
+                item.innerHTML = `
+
+                    <input
+                        type="checkbox"
+                        class="position-checkbox w-4 h-4 rounded text-indigo-600"
+                        data-category="${escapeHtml(category)}"
+                        data-position="${escapeHtml(position)}"
+                        ${enabled ? "checked" : ""}
+                    >
+
+                    <span
+                        class="text-sm font-medium text-slate-700 flex-1"
+                    >
+                        ${escapeHtml(position)}
+                    </span>
+
+                `;
+
+
+                container.appendChild(
+                    item
+                );
+
+            }
+        );
+
+
+    const count =
+        getElement(
+            countId
+        );
+
+
+    if (count) {
+
+        count.textContent =
+            `${positions.length} Position${
+                positions.length !== 1
+                    ? "s"
+                    : ""
+            }`;
+
+    }
+
+}
+
+
+/* =========================================================
+   CATEGORY STATE
+========================================================= */
+
+function updateCategoryState(
+    category
+) {
+
+    if (
+        !positionFilters[category]
+    ) {
+
+        debugError(
+            "Unknown category:",
+            category
+        );
+
+        return;
+
+    }
+
+
+    const enabled =
+        positionFilters[
+            category
+        ].enabled;
+
+
+    const checkboxes =
+        document.querySelectorAll(
+            `.position-checkbox[data-category="${category}"]`
+        );
+
+
+    checkboxes.forEach(
+        checkbox => {
+
+            checkbox.disabled =
+                !enabled;
+
+        }
+    );
+
+
+    let panelId = "";
+
+
+    if (
+        category ===
+        "NON-TEACHING"
+    ) {
+
+        panelId =
+            "nonTeachingPanel";
+
+    }
+
+    else if (
+        category ===
+        "TEACHING"
+    ) {
+
+        panelId =
+            "teachingPanel";
+
+    }
+
+    else {
+
+        panelId =
+            "teachingRelatedPanel";
+
+    }
+
+
+    const panel =
+        getElement(
+            panelId
+        );
+
+
+    if (!panel) {
+        return;
+    }
+
+
+    if (!enabled) {
+
+        panel.classList.add(
+            "opacity-50"
+        );
+
+    }
+    else {
+
+        panel.classList.remove(
+            "opacity-50"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SET CATEGORY POSITIONS
+========================================================= */
+
+function setCategoryPositions(
+    category,
+    enabled
+) {
+
+    if (
+        !positionFilters[category]
+    ) {
+
+        return;
+
+    }
+
+
+    Object.keys(
+        positionFilters[
+            category
+        ].positions
+    )
+    .forEach(
+        position => {
+
+            positionFilters[
+                category
+            ].positions[
+                position
+            ] = enabled;
+
+        }
+    );
+
+
+    const checkboxes =
+        document.querySelectorAll(
+            `.position-checkbox[data-category="${category}"]`
+        );
+
+
+    checkboxes.forEach(
+        checkbox => {
+
+            checkbox.checked =
+                enabled;
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   GENERATE SUMMARY
+========================================================= */
+
+function generateSummary() {
+
+    debugGroup(
+        "GENERATING SUMMARY",
+        function() {
+
+            debugLog(
+                "Current data rows:",
+                currentData.length
+            );
+
+        }
+    );
+
+
+    if (!currentData.length) {
+
+        alert(
+            "No valid data was found."
+        );
+
+        debugError(
+            "generateSummary() stopped because currentData is empty."
+        );
+
+        return;
+
+    }
+
+
+    const positionColumn =
+        getPositionColumn();
+
+    const incumbentColumn =
+        getIncumbentColumn();
+
+    const categoryColumn =
+        getCategoryColumn();
+
+    const divisionColumn =
+        getDivisionColumn();
+
+
+    debugGroup(
+        "SUMMARY COLUMN CONFIGURATION",
+        function() {
+
+            debugLog(
+                "Position:",
+                positionColumn
+            );
+
+            debugLog(
+                "Incumbent:",
+                incumbentColumn
+            );
+
+            debugLog(
+                "Category:",
+                categoryColumn
+            );
+
+            debugLog(
+                "Division:",
+                divisionColumn
+            );
+
+        }
+    );
+
+
+    if (!positionColumn) {
+
+        alert(
+            "POSITION TITLE column could not be detected.\n\n" +
+            "Check the browser console (F12)."
+        );
+
+        return;
+
+    }
+
+
+    if (!incumbentColumn) {
+
+        alert(
+            "NAME OF INCUMBENT column could not be detected.\n\n" +
+            "Check the browser console (F12)."
+        );
+
+        return;
+
+    }
+
+
+    let summary = {};
+
+
+    let statistics = {
+
+        totalRows: currentData.length,
+
+        blankPosition: 0,
+
+        classified: 0,
+
+        unclassified: 0,
+
+        filteredCategory: 0,
+
+        filteredPosition: 0,
+
+        filled: 0,
+
+        vacant: 0,
+
+        divisions: {}
+
+    };
+
+
+    currentData.forEach(
+        (row, index) => {
+
+            const excelRow =
+                index + 2;
+
+
+            const position =
+                String(
+                    row[positionColumn] ?? ""
+                ).trim();
+
+
+            /* =================================================
+               MISSING POSITION
+            ================================================= */
+
+            if (!position) {
+
+                statistics.blankPosition++;
+
+                debugWarn(
+                    `ROW ${excelRow}: Missing position.`,
+                    row
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
+               CATEGORY
+            ================================================= */
+
+            const excelCategory =
+                categoryColumn
+                    ? row[categoryColumn]
+                    : "";
+
+
+            const category =
+                determineCategory(
+                    position,
+                    excelCategory
+                );
+
+
+            if (!category) {
+
+                statistics.unclassified++;
+
+                debugWarn(
+                    `ROW ${excelRow}: UNCLASSIFIED POSITION`,
+                    {
+                        position,
+                        excelCategory,
+                        row
+                    }
+                );
+
+                return;
+
+            }
+
+
+            statistics.classified++;
+
+
+            /* =================================================
+               CATEGORY FILTER
+            ================================================= */
+
+            if (
+                positionFilters[
+                    category
+                ].enabled === false
+            ) {
+
+                statistics.filteredCategory++;
+
+                debugLog(
+                    `ROW ${excelRow}: Category filtered`,
+                    {
+                        position,
+                        category
+                    }
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
+               POSITION FILTER
+            ================================================= */
+
+            const positionKey =
+                Object.keys(
+                    positionFilters[
+                        category
+                    ].positions
+                )
+                .find(
+                    key =>
+                        normalize(key) ===
+                        normalize(position)
+                );
+
+
+            if (
+                positionKey &&
+                positionFilters[
+                    category
+                ].positions[
+                    positionKey
+                ] === false
+            ) {
+
+                statistics.filteredPosition++;
+
+                debugLog(
+                    `ROW ${excelRow}: Position filtered`,
+                    {
+                        position,
+                        category
+                    }
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
+               DIVISION
+            ================================================= */
+
+            const rawDivision =
+                divisionColumn
+                    ? row[divisionColumn]
+                    : "";
+
+
+            const division =
+                normalizeDivision(
+                    rawDivision
+                );
+
+
+            if (!statistics.divisions[division]) {
+
+                statistics.divisions[division] = 0;
+
+            }
+
+
+            statistics.divisions[
+                division
+            ]++;
+
+
+            /* =================================================
+               INCUMBENT
+            ================================================= */
+
+            const incumbent =
+                row[incumbentColumn];
+
+
+            const vacant =
+                isVacant(
+                    incumbent
+                );
+
+
+            const filled =
+                vacant
+                    ? 0
+                    : 1;
+
+
+            const unfilled =
+                vacant
+                    ? 1
+                    : 0;
+
+
+            if (vacant) {
+
+                statistics.vacant++;
+
+            }
+            else {
+
+                statistics.filled++;
+
+            }
+
+
+            /* =================================================
+               DETAILED ROW DEBUG
+            ================================================= */
+
+            debugLog(
+                `ROW ${excelRow} PROCESSED`,
+                {
+                    position,
+                    category,
+                    rawDivision,
+                    normalizedDivision: division,
+                    incumbent,
+                    vacant,
+                    filled,
+                    unfilled
+                }
+            );
+
+
+            /* =================================================
+               INITIALIZE DIVISION
+            ================================================= */
+
+            if (!summary[division]) {
+
+                summary[division] = {
+
+                    nonTeaching: {
+                        filled: 0,
+                        unfilled: 0
+                    },
+
+                    teaching: {
+                        filled: 0,
+                        unfilled: 0
+                    },
+
+                    teachingRelated: {
+                        filled: 0,
+                        unfilled: 0
+                    }
+
+                };
+
+            }
+
+
+            /* =================================================
+               ADD CATEGORY
+            ================================================= */
+
+            if (
+                category ===
+                "NON-TEACHING"
+            ) {
+
+                summary[
+                    division
+                ].nonTeaching.filled +=
+                    filled;
+
+                summary[
+                    division
+                ].nonTeaching.unfilled +=
+                    unfilled;
+
+            }
+
+
+            else if (
+                category ===
+                "TEACHING"
+            ) {
+
+                summary[
+                    division
+                ].teaching.filled +=
+                    filled;
+
+                summary[
+                    division
+                ].teaching.unfilled +=
+                    unfilled;
+
+            }
+
+
+            else if (
+                category ===
+                "TEACHING RELATED"
+            ) {
+
+                summary[
+                    division
+                ].teachingRelated.filled +=
+                    filled;
+
+                summary[
+                    division
+                ].teachingRelated.unfilled +=
+                    unfilled;
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       ENSURE ALL DIVISIONS EXIST
+    ========================================================= */
+
+    functionalDivisionOrder.forEach(
+        division => {
+
+            if (!summary[division]) {
+
+                summary[division] = {
+
+                    nonTeaching: {
+                        filled: 0,
+                        unfilled: 0
+                    },
+
+                    teaching: {
+                        filled: 0,
+                        unfilled: 0
+                    },
+
+                    teachingRelated: {
+                        filled: 0,
+                        unfilled: 0
+                    }
+
+                };
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       CONVERT SUMMARY
+    ========================================================= */
+
+    generatedSummary =
+        functionalDivisionOrder.map(
+            division => {
+
+                const data =
+                    summary[division];
+
+
+                const nonTeachingFilled =
+                    data.nonTeaching.filled;
+
+
+                const nonTeachingUnfilled =
+                    data.nonTeaching.unfilled;
+
+
+                const nonTeachingTotal =
+                    nonTeachingFilled +
+                    nonTeachingUnfilled;
+
+
+                const teachingFilled =
+                    data.teaching.filled;
+
+
+                const teachingUnfilled =
+                    data.teaching.unfilled;
+
+
+                const teachingTotal =
+                    teachingFilled +
+                    teachingUnfilled;
+
+
+                const teachingRelatedFilled =
+                    data.teachingRelated.filled;
+
+
+                const teachingRelatedUnfilled =
+                    data.teachingRelated.unfilled;
+
+
+                const teachingRelatedTotal =
+                    teachingRelatedFilled +
+                    teachingRelatedUnfilled;
+
+
+                const totalFilled =
+                    nonTeachingFilled +
+                    teachingFilled +
+                    teachingRelatedFilled;
+
+
+                const totalUnfilled =
+                    nonTeachingUnfilled +
+                    teachingUnfilled +
+                    teachingRelatedUnfilled;
+
+
+                const grandTotal =
+                    totalFilled +
+                    totalUnfilled;
+
+
+                const percentageFilled =
+                    grandTotal > 0
+                        ? (
+                            totalFilled /
+                            grandTotal
+                        ) * 100
+                        : 0;
+
+
+                return {
+
+                    division,
+
+                    nonTeachingFilled,
+                    nonTeachingUnfilled,
+                    nonTeachingTotal,
+
+                    teachingFilled,
+                    teachingUnfilled,
+                    teachingTotal,
+
+                    teachingRelatedFilled,
+                    teachingRelatedUnfilled,
+                    teachingRelatedTotal,
+
+                    totalFilled,
+                    totalUnfilled,
+                    grandTotal,
+
+                    percentageFilled
+
+                };
+
+            }
+        );
+
+
+    /* =========================================================
+       FINAL DEBUG REPORT
+    ========================================================= */
+
+    debugGroup(
+        "FINAL SUMMARY DEBUG REPORT",
+        function() {
+
+            console.table(
+                generatedSummary
+            );
+
+            console.log(
+                "Processing statistics:",
+                statistics
+            );
+
+            console.log(
+                "Division distribution:",
+                statistics.divisions
+            );
+
+        }
+    );
+
+
+    renderSummary();
+
+}
+
+
+/* =========================================================
+   RENDER SUMMARY
+========================================================= */
+
+function renderSummary() {
+
+    const body =
+        getElement(
+            "summaryTableBody"
+        );
+
+    const footer =
+        getElement(
+            "summaryTableFooter"
+        );
+
+
+    if (!body || !footer) {
+
+        debugError(
+            "Summary table body/footer missing."
+        );
+
+        return;
+
+    }
+
+
+    body.innerHTML = "";
+
+
+    let totals = {
+
+        nonTeachingFilled: 0,
+        nonTeachingUnfilled: 0,
+
+        teachingFilled: 0,
+        teachingUnfilled: 0,
+
+        teachingRelatedFilled: 0,
+        teachingRelatedUnfilled: 0,
+
+        totalFilled: 0,
+        totalUnfilled: 0
+
+    };
+
+
+    generatedSummary.forEach(
+        item => {
+
+            totals.nonTeachingFilled +=
+                item.nonTeachingFilled;
+
+            totals.nonTeachingUnfilled +=
+                item.nonTeachingUnfilled;
+
+
+            totals.teachingFilled +=
+                item.teachingFilled;
+
+            totals.teachingUnfilled +=
+                item.teachingUnfilled;
+
+
+            totals.teachingRelatedFilled +=
+                item.teachingRelatedFilled;
+
+            totals.teachingRelatedUnfilled +=
+                item.teachingRelatedUnfilled;
+
+
+            totals.totalFilled +=
+                item.totalFilled;
+
+            totals.totalUnfilled +=
+                item.totalUnfilled;
+
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.className =
+                "hover:bg-slate-50 transition";
+
+
+            row.innerHTML = `
+
+                <td class="border border-slate-200 px-4 py-3 font-semibold text-slate-700">
+                    ${escapeHtml(item.division)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center text-emerald-600">
+                    ${formatNumber(item.nonTeachingFilled)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center text-red-600">
+                    ${formatNumber(item.nonTeachingUnfilled)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center font-semibold">
+                    ${formatNumber(item.nonTeachingTotal)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center text-emerald-600">
+                    ${formatNumber(item.teachingFilled)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center text-red-600">
+                    ${formatNumber(item.teachingUnfilled)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center font-semibold">
+                    ${formatNumber(item.teachingTotal)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center text-emerald-600">
+                    ${formatNumber(item.teachingRelatedFilled)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center text-red-600">
+                    ${formatNumber(item.teachingRelatedUnfilled)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center font-semibold">
+                    ${formatNumber(item.teachingRelatedTotal)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center bg-blue-50 text-emerald-700 font-semibold">
+                    ${formatNumber(item.totalFilled)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center bg-blue-50 text-red-700 font-semibold">
+                    ${formatNumber(item.totalUnfilled)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center bg-blue-50 font-bold">
+                    ${formatNumber(item.grandTotal)}
+                </td>
+
+                <td class="border border-slate-200 px-3 py-3 text-center bg-indigo-50 font-bold text-indigo-700">
+                    ${item.percentageFilled.toFixed(2)}%
+                </td>
+
+            `;
+
+
+            body.appendChild(
+                row
+            );
+
+        }
+    );
+
+
+    /* =========================================================
+       TOTALS
+    ========================================================= */
+
+    const nonTeachingTotal =
+        totals.nonTeachingFilled +
+        totals.nonTeachingUnfilled;
+
+
+    const teachingTotal =
+        totals.teachingFilled +
+        totals.teachingUnfilled;
+
+
+    const teachingRelatedTotal =
+        totals.teachingRelatedFilled +
+        totals.teachingRelatedUnfilled;
+
+
+    const grandTotal =
+        totals.totalFilled +
+        totals.totalUnfilled;
+
+
+    const percentageFilled =
+        grandTotal > 0
+            ? (
+                totals.totalFilled /
+                grandTotal
+            ) * 100
+            : 0;
+
+
+    /* =========================================================
+       FOOTER
+    ========================================================= */
+
+    footer.innerHTML = `
+
+        <tr>
+
+            <td class="border border-slate-300 px-4 py-4">
+                GRAND TOTAL
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center">
+                ${formatNumber(totals.nonTeachingFilled)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center">
+                ${formatNumber(totals.nonTeachingUnfilled)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center">
+                ${formatNumber(nonTeachingTotal)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center">
+                ${formatNumber(totals.teachingFilled)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center">
+                ${formatNumber(totals.teachingUnfilled)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center">
+                ${formatNumber(teachingTotal)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center">
+                ${formatNumber(totals.teachingRelatedFilled)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center">
+                ${formatNumber(totals.teachingRelatedUnfilled)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center">
+                ${formatNumber(teachingRelatedTotal)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center bg-blue-100">
+                ${formatNumber(totals.totalFilled)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center bg-blue-100">
+                ${formatNumber(totals.totalUnfilled)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center bg-blue-100">
+                ${formatNumber(grandTotal)}
+            </td>
+
+            <td class="border border-slate-300 px-3 py-4 text-center bg-indigo-100 text-indigo-800">
+                ${percentageFilled.toFixed(2)}%
+            </td>
+
+        </tr>
+
+    `;
+
+
+    /* =========================================================
+       CARDS
+    ========================================================= */
+
+    const totalFilledCard =
+        getElement(
+            "totalFilledCard"
+        );
+
+    if (totalFilledCard) {
+
+        totalFilledCard.textContent =
+            formatNumber(
+                totals.totalFilled
+            );
+
+    }
+
+
+    const totalUnfilledCard =
+        getElement(
+            "totalUnfilledCard"
+        );
+
+    if (totalUnfilledCard) {
+
+        totalUnfilledCard.textContent =
+            formatNumber(
+                totals.totalUnfilled
+            );
+
+    }
+
+
+    const totalPositionsCard =
+        getElement(
+            "totalPositionsCard"
+        );
+
+    if (totalPositionsCard) {
+
+        totalPositionsCard.textContent =
+            formatNumber(
+                grandTotal
+            );
+
+    }
+
+
+    const vacancyRate =
+        grandTotal > 0
+            ? (
+                totals.totalUnfilled /
+                grandTotal
+            ) * 100
+            : 0;
+
+
+    const vacancyRateCard =
+        getElement(
+            "vacancyRateCard"
+        );
+
+    if (vacancyRateCard) {
+
+        vacancyRateCard.textContent =
+            `${vacancyRate.toFixed(2)}%`;
+
+    }
+
+
+    const filledRateCard =
+        getElement(
+            "filledRateCard"
+        );
+
+    if (filledRateCard) {
+
+        filledRateCard.textContent =
+            `${percentageFilled.toFixed(2)}%`;
+
+    }
+
+
+    /* =========================================================
+       DATE
+    ========================================================= */
+
+    const summaryDate =
+        getElement(
+            "summaryDate"
+        );
+
+
+    if (
+        summaryDate &&
+        summaryDate.value
+    ) {
+
+        const date =
+            new Date(
+                summaryDate.value +
+                "-01T00:00:00"
+            );
+
+
+        const summaryAsOf =
+            getElement(
+                "summaryAsOf"
+            );
+
+
+        if (summaryAsOf) {
+
+            summaryAsOf.textContent =
+                `As of ${
+                    date.toLocaleString(
+                        "en-US",
+                        {
+                            month: "long",
+                            year: "numeric"
+                        }
+                    ).toUpperCase()
+                }`;
+
+        }
+
+    }
+
+
+    const summaryCards =
+        getElement(
+            "summaryCards"
+        );
+
+    if (summaryCards) {
+
+        summaryCards.classList.remove(
+            "hidden"
+        );
+
+    }
+
+
+    const summarySection =
+        getElement(
+            "summarySection"
+        );
+
+    if (summarySection) {
+
+        summarySection.classList.remove(
+            "hidden"
+        );
+
+    }
+
+
+    debugLog(
+        "Summary rendered successfully."
+    );
+
+    debugLog(
+        "Grand Total:",
+        grandTotal
+    );
+
+    debugLog(
+        "Filled:",
+        totals.totalFilled
+    );
+
+    debugLog(
+        "Unfilled:",
+        totals.totalUnfilled
+    );
+
+}
+
+
+/* =========================================================
+   EXPORT
+========================================================= */
+
+function exportSummary() {
+
+    debugLog(
+        "Export button clicked."
+    );
+
+
+    if (
+        generatedSummary.length === 0
+    ) {
+
+        alert(
+            "Please generate the summary first."
+        );
+
+        debugWarn(
+            "Export cancelled because generatedSummary is empty."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        typeof XLSX === "undefined"
+    ) {
+
+        debugError(
+            "XLSX library missing during export."
+        );
+
+        alert(
+            "Excel export library is missing."
+        );
+
+        return;
+
+    }
+
+
+    debugLog(
+        "Exporting rows:",
+        generatedSummary.length
+    );
+
+
+    const excelData = [
+
+        [
+            "SUMMARY OF FILLED AND UNFILLED POSITIONS"
+        ],
+
+        [
+            getElement(
+                "summaryAsOf"
+            )?.textContent || ""
+        ],
+
+        [],
+
+        [
+
+            "FUNCTIONAL DIVISION",
+
+            "NON-TEACHING FILLED",
+            "NON-TEACHING UNFILLED",
+            "NON-TEACHING TOTAL",
+
+            "TEACHING FILLED",
+            "TEACHING UNFILLED",
+            "TEACHING TOTAL",
+
+            "TEACHING RELATED FILLED",
+            "TEACHING RELATED UNFILLED",
+            "TEACHING RELATED TOTAL",
+
+            "TOTAL FILLED",
+            "TOTAL UNFILLED",
+            "GRAND TOTAL",
+
+            "% FILLED"
+
+        ]
+
+    ];
+
+
+    generatedSummary.forEach(
+        item => {
+
+            excelData.push([
+
+                item.division,
+
+                item.nonTeachingFilled,
+                item.nonTeachingUnfilled,
+                item.nonTeachingTotal,
+
+                item.teachingFilled,
+                item.teachingUnfilled,
+                item.teachingTotal,
+
+                item.teachingRelatedFilled,
+                item.teachingRelatedUnfilled,
+                item.teachingRelatedTotal,
+
+                item.totalFilled,
+                item.totalUnfilled,
+                item.grandTotal,
+
+                item.percentageFilled / 100
+
+            ]);
+
+        }
+    );
+
+
+    /* =========================================================
+       TOTALS
+    ========================================================= */
+
+    const totals =
+        generatedSummary.reduce(
+            (total, item) => {
+
+                total.nonTeachingFilled +=
+                    item.nonTeachingFilled;
+
+                total.nonTeachingUnfilled +=
+                    item.nonTeachingUnfilled;
+
+
+                total.teachingFilled +=
+                    item.teachingFilled;
+
+                total.teachingUnfilled +=
+                    item.teachingUnfilled;
+
+
+                total.teachingRelatedFilled +=
+                    item.teachingRelatedFilled;
+
+                total.teachingRelatedUnfilled +=
+                    item.teachingRelatedUnfilled;
+
+
+                total.filled +=
+                    item.totalFilled;
+
+                total.unfilled +=
+                    item.totalUnfilled;
+
+
+                return total;
+
+            },
+            {
+
+                nonTeachingFilled: 0,
+                nonTeachingUnfilled: 0,
+
+                teachingFilled: 0,
+                teachingUnfilled: 0,
+
+                teachingRelatedFilled: 0,
+                teachingRelatedUnfilled: 0,
+
+                filled: 0,
+                unfilled: 0
+
+            }
+        );
+
+
+    const totalPositions =
+        totals.filled +
+        totals.unfilled;
+
+
+    excelData.push([
+
+        "GRAND TOTAL",
+
+        totals.nonTeachingFilled,
+
+        totals.nonTeachingUnfilled,
+
+        totals.nonTeachingFilled +
+        totals.nonTeachingUnfilled,
+
+
+        totals.teachingFilled,
+
+        totals.teachingUnfilled,
+
+        totals.teachingFilled +
+        totals.teachingUnfilled,
+
+
+        totals.teachingRelatedFilled,
+
+        totals.teachingRelatedUnfilled,
+
+        totals.teachingRelatedFilled +
+        totals.teachingRelatedUnfilled,
+
+
+        totals.filled,
+
+        totals.unfilled,
+
+        totalPositions,
+
+        totalPositions > 0
+            ? totals.filled /
+              totalPositions
+            : 0
+
+    ]);
+
+
+    /* =========================================================
+       CREATE WORKBOOK
+    ========================================================= */
+
+    const newWorkbook =
+        XLSX.utils.book_new();
+
+
+    const worksheet =
+        XLSX.utils.aoa_to_sheet(
+            excelData
+        );
+
+
+    /* =========================================================
+       MERGES
+    ========================================================= */
+
+    worksheet["!merges"] = [
+
+        {
+            s: {
+                r: 0,
+                c: 0
+            },
+
+            e: {
+                r: 0,
+                c: 13
+            }
+        },
+
+        {
+            s: {
+                r: 1,
+                c: 0
+            },
+
+            e: {
+                r: 1,
+                c: 13
+            }
+        }
+
+    ];
+
+
+    /* =========================================================
+       COLUMN WIDTHS
+    ========================================================= */
+
+    worksheet["!cols"] = [
+
+        { wch: 25 },
+
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 },
+
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 },
+
+        { wch: 22 },
+        { wch: 22 },
+        { wch: 22 },
+
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 15 },
+
+        { wch: 12 }
+
+    ];
+
+
+    /* =========================================================
+       PERCENT FORMAT
+       
+       HEADER = ROW 3
+       FIRST DATA = ROW 4
+       TOTALS = LAST ROW
+    ========================================================= */
+
+    for (
+        let row = 4;
+        row < excelData.length;
+        row++
+    ) {
+
+        const cell =
+            XLSX.utils.encode_cell({
+
+                r: row,
+                c: 13
+
+            });
+
+
+        if (
+            worksheet[cell]
+        ) {
+
+            worksheet[cell].z =
+                "0.00%";
+
+        }
+
+    }
+
+
+    XLSX.utils.book_append_sheet(
+        newWorkbook,
+        worksheet,
+        "SUMMARY"
+    );
+
+
+    XLSX.writeFile(
+        newWorkbook,
+        "SUMMARY_FILLED_AND_UNFILLED_POSITIONS.xlsx"
+    );
+
+
+    debugLog(
+        "Excel export completed successfully."
+    );
+
+}
+
+
+/* =========================================================
+   FORMAT NUMBER
+========================================================= */
+
+function formatNumber(value) {
+
+    return new Intl.NumberFormat(
+        "en-US",
+        {
+            maximumFractionDigits: 0
+        }
+    ).format(
+        Number(value) || 0
+    );
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+/* =========================================================
+   FORMAT FILE SIZE
+========================================================= */
+
+function formatFileSize(bytes) {
+
+    if (!bytes) {
+        return "0 KB";
+    }
+
+
+    const units = [
+        "B",
+        "KB",
+        "MB",
+        "GB"
+    ];
+
+
+    const index =
+        Math.floor(
+            Math.log(bytes) /
+            Math.log(1024)
+        );
+
+
+    const size =
+        bytes /
+        Math.pow(
+            1024,
+            index
+        );
+
+
+    return `${size.toFixed(
+        index === 0 ? 0 : 1
+    )} ${units[index]}`;
+
+}
+
+/* =========================================================
+   INITIALIZE APPLICATION
+========================================================= */
+
+function initializeApplication() {
+
+    console.clear();
+
+    console.log(
+        "================================================"
+    );
+
+    console.log(
+        "POSITION SUMMARY SYSTEM INITIALIZING"
+    );
+
+    console.log(
+        "================================================"
+    );
+
+
+    /* =====================================================
+       CHECK XLSX
+    ===================================================== */
+
+    if (
+        typeof XLSX === "undefined"
+    ) {
+
+        console.error(
+            "❌ XLSX / SheetJS is NOT available."
+        );
+
+        console.error(
+            "Make sure the XLSX library is loaded BEFORE this script."
+        );
+
+    }
+    else {
+
+        console.log(
+            "✅ XLSX / SheetJS detected."
+        );
+
+    }
+
+
+    /* =====================================================
+       CHECK DOM
+    ===================================================== */
+
+    const domReady =
+        checkRequiredElements();
+
+
+    if (!domReady) {
+
+        console.error(
+            "❌ Application initialization stopped because required HTML elements are missing."
+        );
+
+        return;
+
+    }
+
+
+    initializeDate();
+
+
+    /* =====================================================
+       ELEMENT REFERENCES
+    ===================================================== */
+
+    const excelFile =
+        getElement(
+            "excelFile"
+        );
+
+    const sheetSelect =
+        getElement(
+            "sheetSelect"
+        );
+
+    const generateBtn =
+        getElement(
+            "generateBtn"
+        );
+
+    const positionFilterBtn =
+        getElement(
+            "positionFilterBtn"
+        );
+
+    const closePositionModalBtn =
+        getElement(
+            "closePositionModalBtn"
+        );
+
+    const cancelPositionFilterBtn =
+        getElement(
+            "cancelPositionFilterBtn"
+        );
+
+    const applyPositionFilterBtn =
+        getElement(
+            "applyPositionFilterBtn"
+        );
+
+    const resetPositionFilterBtn =
+        getElement(
+            "resetPositionFilterBtn"
+        );
+
+    const exportBtn =
+        getElement(
+            "exportBtn"
+        );
+
+    const positionSearch =
+        getElement(
+            "positionSearch"
+        );
+
+
+    /* =====================================================
+       FILE UPLOAD
+    ===================================================== */
+
+    if (excelFile) {
+
+        excelFile.addEventListener(
+            "change",
+            handleExcelUpload
+        );
+
+    }
+
+
+    /* =====================================================
+       SHEET CHANGE
+    ===================================================== */
+
+    if (sheetSelect) {
+
+        sheetSelect.addEventListener(
+            "change",
+            function() {
+
+                debugLog(
+                    "Worksheet changed to:",
+                    this.value
+                );
+
+                resetAllPositionFilters();
+
+                loadWorksheet();
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       GENERATE
+    ===================================================== */
+
+    if (generateBtn) {
+
+        generateBtn.addEventListener(
+            "click",
+            generateSummary
+        );
+
+    }
+
+
+    /* =====================================================
+       POSITION FILTER
+    ===================================================== */
+
+    if (positionFilterBtn) {
+
+        positionFilterBtn.addEventListener(
+            "click",
+            openPositionFilter
+        );
+
+    }
+
+
+    if (closePositionModalBtn) {
+
+        closePositionModalBtn.addEventListener(
+            "click",
+            closePositionFilterModal
+        );
+
+    }
+
+
+    if (cancelPositionFilterBtn) {
+
+        cancelPositionFilterBtn.addEventListener(
+            "click",
+            closePositionFilterModal
+        );
+
+    }
+
+
+    if (applyPositionFilterBtn) {
+
+        applyPositionFilterBtn.addEventListener(
+            "click",
+            function() {
+
+                closePositionFilterModal();
+
+                alert(
+                    "Position filter applied successfully."
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       RESET FILTER
+    ===================================================== */
+
+    if (resetPositionFilterBtn) {
+
+        resetPositionFilterBtn.addEventListener(
+            "click",
+            function() {
+
+                resetAllPositionFilters();
+
+                renderPositionLists();
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       CATEGORY TOGGLES
+    ===================================================== */
+
+    const categoryToggles = {
+
+        "nonTeachingCategoryToggle":
+            "NON-TEACHING",
+
+        "teachingCategoryToggle":
+            "TEACHING",
+
+        "teachingRelatedCategoryToggle":
+            "TEACHING RELATED"
+
+    };
+
+
+    Object.entries(
+        categoryToggles
+    ).forEach(
+        ([id, category]) => {
+
+            const toggle =
+                getElement(id);
+
+
+            if (!toggle) {
+                return;
+            }
+
+
+            toggle.addEventListener(
+                "change",
+                function() {
+
+                    positionFilters[
+                        category
+                    ].enabled =
+                        this.checked;
+
+
+                    debugLog(
+                        `Category ${category} enabled:`,
+                        this.checked
+                    );
+
+
+                    updateCategoryState(
+                        category
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    /* =====================================================
+       CHECKBOX STATE
+    ===================================================== */
+
+    document.addEventListener(
+        "change",
+        function(event) {
+
+            if (
+                !event.target.classList.contains(
+                    "position-checkbox"
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            const category =
+                event.target.dataset.category;
+
+
+            const position =
+                event.target.dataset.position;
+
+
+            if (
+                !positionFilters[category]
+            ) {
+
+                debugError(
+                    "Checkbox category does not exist:",
+                    category
+                );
+
+                return;
+
+            }
+
+
+            const key =
+                Object.keys(
+                    positionFilters[
+                        category
+                    ].positions
+                )
+                .find(
+                    item =>
+                        normalize(item) ===
+                        normalize(position)
+                );
+
+
+            if (key) {
+
+                positionFilters[
+                    category
+                ].positions[
+                    key
+                ] =
+                    event.target.checked;
+
+
+                debugLog(
+                    "Position filter changed:",
+                    {
+                        category,
+                        position: key,
+                        enabled:
+                            event.target.checked
+                    }
+                );
+
+            }
+            else {
+
+                debugWarn(
+                    "Could not save checkbox state:",
+                    {
+                        category,
+                        position
+                    }
+                );
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       POSITION SEARCH
+    ===================================================== */
+
+    if (positionSearch) {
+
+        positionSearch.addEventListener(
+            "input",
+            function() {
+
+                const keyword =
+                    this.value
+                        .toLowerCase()
+                        .trim();
+
+
+                const items =
+                    document.querySelectorAll(
+                        ".position-item"
+                    );
+
+
+                items.forEach(
+                    item => {
+
+                        const position =
+                            item.dataset.position;
+
+
+                        if (
+                            position.includes(
+                                keyword
+                            )
+                        ) {
+
+                            item.classList.remove(
+                                "hidden"
+                            );
+
+                        }
+                        else {
+
+                            item.classList.add(
+                                "hidden"
+                            );
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       EXPORT
+    ===================================================== */
+
+    if (exportBtn) {
+
+        exportBtn.addEventListener(
+            "click",
+            exportSummary
+        );
+
+    }
+
+
+    /* =====================================================
+       INITIALIZATION COMPLETE
+    ===================================================== */
+
+    console.log(
+        "================================================"
+    );
+
+    console.log(
+        "✅ POSITION SUMMARY SYSTEM READY"
+    );
+
+    console.log(
+        "Debug mode:",
+        DEBUG_MODE
+    );
+
+    console.log(
+        "Upload an Excel file to begin."
+    );
+
+    console.log(
+        "================================================"
+    );
+
+}
+
+
+/* =========================================================
+   SAFE DOM INITIALIZATION
+
+   This prevents errors when the script is loaded
+   before the HTML elements exist.
+========================================================= */
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeApplication
+    );
+
+}
+else {
+
+    initializeApplication();
+
+}
+
+</script>
+
+
+</body>
+</html>
