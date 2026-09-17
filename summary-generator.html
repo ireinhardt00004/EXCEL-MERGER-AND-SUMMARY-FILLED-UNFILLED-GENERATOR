@@ -589,6 +589,118 @@
 
 </main>
 
+<!-- =========================================================
+     ADDITIONAL SUMMARIES
+========================================================= -->
+
+<div id="additionalSummaryWrapper" class="space-y-6 mt-6">
+
+    <!-- SUMMARY 2: POSITION PER PLANTILLA ASSIGNMENT -->
+    <section id="plantillaPositionSummarySection"
+        class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+        <!-- <div class="p-6 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800">
+                    BREAKDOWN OF FILLED AND UNFILLED POSITIONS
+                </h2>
+                <p id="plantillaSummaryAsOf" class="text-sm text-slate-500 mt-1">
+                    PER POSITION PER PLANTILLA ASSIGNMENT
+                </p>
+            </div>
+
+            <button id="exportPlantillaSummaryBtn"
+                type="button"
+                class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium">
+                ⬇ Export Plantilla Summary
+            </button>
+        </div> -->
+
+        <!-- HORIZONTAL + VERTICAL SCROLL -->
+        <!-- <div class="max-h-96 overflow-x-auto overflow-y-auto">
+            <table class="min-w-[1000px] w-full text-sm border-collapse">
+                <thead class="bg-slate-800 text-white">
+                    <tr>
+                        <th class="border border-slate-600 px-4 py-3 text-left">
+                            PLANTILLA ASSIGNMENT
+                        </th>
+                        <th class="border border-slate-600 px-4 py-3 text-left">
+                            CATEGORY
+                        </th>
+                        <th class="border border-slate-600 px-4 py-3 text-left">
+                            POSITION
+                        </th>
+                        <th class="border border-slate-600 px-4 py-3 text-center">
+                            FILLED
+                        </th>
+                        <th class="border border-slate-600 px-4 py-3 text-center">
+                            UNFILLED
+                        </th>
+                        <th class="border border-slate-600 px-4 py-3 text-center">
+                            TOTAL
+                        </th>
+                        <th class="border border-slate-600 px-4 py-3 text-center">
+                            % FILLED
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody id="plantillaPositionSummaryBody"></tbody>
+
+                <tfoot id="plantillaPositionSummaryFooter"
+                    class="bg-slate-100 font-bold">
+                </tfoot>
+            </table>
+        </div> -->
+    </section>
+
+
+    <!-- SUMMARY 3: JHS SCHOOL IU / NON-IU -->
+    <section id="jhsSchoolSummarySection"
+        class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+        <!-- <div class="p-6 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800">
+                    JHS SUMMARY BY SCHOOL AND POSITION
+                </h2>
+                <p id="jhsSchoolSummaryAsOf" class="text-sm text-slate-500 mt-1">
+                    GROUPED INTO IU AND NON-IU
+                </p>
+            </div>
+
+            <button id="exportJhsSchoolSummaryBtn"
+                type="button"
+                class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">
+                ⬇ Export JHS IU / NON-IU
+            </button>
+        </div> -->
+
+        <!-- HORIZONTAL + VERTICAL SCROLL -->
+        <!-- <div class="max-h-96 overflow-x-auto overflow-y-auto">
+            <table class="min-w-[1000px] w-full text-sm border-collapse">
+                <thead class="bg-slate-800 text-white">
+                    <tr>
+                        <th class="border border-slate-600 px-4 py-3 text-center">NO.</th>
+                        <th class="border border-slate-600 px-4 py-3 text-left">GROUP</th>
+                        <th class="border border-slate-600 px-4 py-3 text-left">SCHOOL</th>
+                        <th class="border border-slate-600 px-4 py-3 text-left">POSITION</th>
+                        <th class="border border-slate-600 px-4 py-3 text-center">FILLED</th>
+                        <th class="border border-slate-600 px-4 py-3 text-center">UNFILLED</th>
+                        <th class="border border-slate-600 px-4 py-3 text-center">TOTAL</th>
+                    </tr>
+                </thead>
+
+                <tbody id="jhsSchoolSummaryBody"></tbody>
+
+                <tfoot id="jhsSchoolSummaryFooter"
+                    class="bg-slate-100 font-bold">
+                </tfoot>
+            </table>
+        </div> -->
+    </section>
+
+</div>
 
 
 
@@ -1089,6 +1201,8 @@
 </div>
 
 
+
+
 <style>
     @keyframes excelProgress {
 
@@ -1131,8 +1245,7 @@
      JAVASCRIPT
 ========================================================= -->
 <script>
-
-/* =========================================================
+    /* =========================================================
    DEBUG MODE
 ========================================================= */
 
@@ -1677,10 +1790,6 @@ function resetAllPositionFilters() {
 
 }
 
-
-/* =========================================================
-   UPLOAD EXCEL
-========================================================= */
 
 /* =========================================================
    EXCEL LOADING UI
@@ -5929,7 +6038,1027 @@ else {
 
 }
 
+
+
+/* =========================================================
+   ADDITIONAL PLANTILLA + JHS SCHOOL SUMMARIES  (FIXED)
+========================================================= */
+
+/*
+===========================================================
+ADDITIONAL PLANTILLA + JHS SCHOOL SUMMARIES  (FIXED)
+Works with the existing Position Summary application.
+
+FIXES APPLIED (compared to the original version):
+1. Export button clicks now use EVENT DELEGATION on `document`.
+   Previously the click listeners were attached only once, directly
+   to the button elements, at page load. Changing the sheet dropdown
+   removes and rebuilds the whole section (including the buttons),
+   which wiped out those listeners forever -> the "Export" buttons
+   stopped doing anything after the first sheet change. Delegated
+   listeners survive any number of rebuilds because they check
+   event.target.id at click time instead of relying on a reference
+   to a specific (possibly stale) DOM node.
+2. getRealSchoolColumn() now logs the columns it found and the
+   match result to the console, so a "school column not detected"
+   failure can be diagnosed instead of just showing an alert.
+3. ensureAdditionalSummaryArea() logs an error (instead of silently
+   doing nothing) if #summarySection can't be found, and falls back
+   to appending the section to <body> so the buttons still exist.
+
+SUMMARY 2:
+Breakdown by Plantilla Assignment / Functional Division,
+Position and Category.
+
+Rules:
+OSDS, CID, SGOD, ALS, KINDER, ELEM, SHS are recognized
+from the Plantilla Assignment / Functional Division column.
+Anything else goes to JHS.
+
+SUMMARY 3:
+JHS positions by school, grouped into IU and NON-IU.
+Filled/Unfilled is based on Name of Incumbent.
+===========================================================
+*/
+
+(function () {
+    "use strict";
+
+    const ADDITIONAL_IU_SCHOOLS = new Set([
+        "ALFONSO INTEGRATED HIGH SCHOOL",
+        "AMADEO NATIONAL HIGH SCHOOL",
+        "AMAYA SCHOOL OF HOME INDUSTRIES",
+        "BAGBAG NATIONAL HIGH SCHOOL (LIGTONG NATIONAL HIGH SCHOOL)",
+        "BENDITA INTEGRATED HIGH SCHOOL",
+        "BINAKAYAN NATIONAL HIGH SCHOOL",
+        "BUCAL NATIONAL INTEGRATED SCHOOL",
+        "BULIHAN INTEGRATED NATIONAL HIGH SCHOOL",
+        "CARMONA NATIONAL HIGH SCHOOL",
+        "CAVITE SCIENCE INTEGRATED SCHOOL",
+        "CONSTANCIO E. AURE, SR. NATIONAL HIGH SCHOOL",
+        "EMILIANO TRIA TIRONA MEMORIAL NATIONAL INTEGRATED HIGH SCHOOL",
+        "FRANCISCO OSORIO INTEGRATED SENIOR HIGH SCHOOL",
+        "FRANCISO P. TOLENTINO INTEGRATED HIGH SCHOOL",
+        "GEN. EMILIO AGUINALDO - BAILEN INTEGRATED SCHOOL",
+        "GEN. MARIANO ALVAREZ TECHNICAL HIGH SCHOOL",
+        "GEN. VITO BELARMINO INTEGRATED NATIONAL HIGH SCHOOL",
+        "KAONG NATIONAL HIGH SCHOOL",
+        "KAYTITINGA INTEGRATED SCHOOL",
+        "LUCSUHIN INTEGRATED SCHOOL",
+        "LUIS AGUADO NATIONAL HIGH SCHOOL",
+        "LUMAMPONG INTEGRATED NATIONAL HIGH SCHOOL",
+        "LUMIL INTEGRATED NATIONAL HIGH SCHOOL",
+        "MALABAG NATIONAL HIGH SCHOOL",
+        "MARAGONDON NATIONAL HIGH SCHOOL",
+        "MUNTING ILOG INTEGRATED NATIONAL HIGH SCHOOL",
+        "NAIC COASTAL INTEGRATED NATIONAL HIGH SCHOOL",
+        "NAIC INTEGRATED NATIONAL HIGH SCHOOL",
+        "NOVELETA NATIONAL HIGH SCHOOL",
+        "ROSARIO NATIONAL HIGH SCHOOL (FORMERLY A. ABADILLA NATIONAL HIGH SCHOOL)",
+        "SAN JOSE COMMUNITY HIGH SCHOOL",
+        "TAGAYTAY CITY NATIONAL HIGH SCHOOL - INTEGRATED SENIOR HIGH SCHOOL",
+        "TAGAYTAY CITY SCIENCE NATIONAL HIGH SCHOOL - INTEGRATED SENIOR HIGH SCHOOL",
+        "TANZA NATIONAL COMPREHESIVE HIGH SCHOOL",
+        "TANZA NATIONAL TRADE SCHOOL",
+        "TERNATE INTEGRATED NATIONAL HIGH SCHOOL",
+        "TERNATE WEST NATIONAL HIGH SCHOOL",
+        "TRECE MARTIREZ CITY NATIONAL HIGH SCHOOL"
+    ]);
+
+    /*
+     * The user's IU list contains "Amaya Sch. of Home Industries".
+     * These aliases make matching tolerant of punctuation, spacing and
+     * common Excel spelling variations.
+     */
+    const IU_ALIASES = {
+        // "AMAYA SCHOOL OF HOME INDUSTRIES": "AMAYA SCH. OF HOME INDUSTRIES",
+        // "AMAYA SCH OF HOME INDUSTRIES": "AMAYA SCH. OF HOME INDUSTRIES",
+        "FRANCISCO P TOLENTINO INTEGRATED HIGH SCHOOL": "FRANCISCO P. TOLENTINO INTEGRATED HIGH SCHOOL",
+        "GEN EMILIO AGUINALDO BAILEN INTEGRATED SCHOOL": "GEN. EMILIO AGUINALDO-BAILEN INTEGRATED SCHOOL",
+        "GEN MARIANO ALVAREZ TECH HIGH SCHOOL": "GEN. MARIANO ALVAREZ TECH. HIGH SCHOOL",
+        "GEN VITO BELARMINO NATIONAL HIGH SCHOOL": "GEN. VITO BELARMINO NATIONAL HIGH SCHOOL",
+        "CONSTANCIO E AURE SR NATIONAL HIGH SCHOOL": "CONSTANCIO E. AURE SR. NATIONAL HIGH SCHOOL"
+    };
+
+    function safeNormalizeText(value) {
+        return String(value ?? "")
+            .toUpperCase()
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+
+    function normalizeSchool(value) {
+        let text = safeNormalizeText(value)
+            .replace(/[“”"]/g, "")
+            .replace(/\s*-\s*/g, "-");
+
+        text = text
+            .replace(/\bSCHOOL\b/g, "SCHOOL")
+            .replace(/\bSCH\.\b/g, "SCH.");
+
+        const compact = text
+            .replace(/\./g, "")
+            .replace(/-/g, " ")
+            .replace(/[^A-Z0-9 ]/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        const aliasKey = Object.keys(IU_ALIASES).find(
+            key => safeNormalizeText(key)
+                .replace(/[^A-Z0-9 ]/g, "")
+                .replace(/\s+/g, " ")
+                === compact
+        );
+
+        return aliasKey ? IU_ALIASES[aliasKey] : text;
+    }
+
+    function isIU(school) {
+        const normalized = normalizeSchool(school);
+        const compact = normalized
+            .replace(/[^A-Z0-9]/g, "");
+
+        for (const item of ADDITIONAL_IU_SCHOOLS) {
+            const itemCompact = item.replace(/[^A-Z0-9]/g, "");
+            if (compact === itemCompact) return true;
+        }
+
+        return false;
+    }
+
+    /*
+     * IMPORTANT:
+     * We do NOT use PLANTILLA ASSIGNMENT as the school column when
+     * a real SCHOOL column exists. The fallback is only for workbooks
+     * where the school itself is stored in that field.
+     *
+     * FIX #2: now logs the columns it sees and what it matched,
+     * so a missing-school-column failure is diagnosable from the
+     * console instead of just showing an alert.
+     */
+    function getRealSchoolColumn() {
+        const candidates = [
+            "SCHOOL NAME",
+            "NAME OF SCHOOL",
+            "SCHOOL / STATION",
+            "SCHOOL/STATION",
+            "STATION",
+            "SCHOOL ASSIGNMENT",
+            "JHS SCHOOL",
+            "SCHOOL NAME / STATION",
+            "SCHOOL",
+            "PLANTILLA ASSIGNMENT"
+        ];
+
+        const columns = typeof currentData !== "undefined" && currentData.length
+            ? Object.keys(currentData[0])
+            : [];
+
+        console.log("[JHS Export] Available columns in sheet:", columns);
+
+        const norm = c => (typeof normalize === "function")
+            ? normalize(c)
+            : safeNormalizeText(c).replace(/[^A-Z0-9]/g, "");
+
+        for (const keyword of candidates) {
+            const key = norm(keyword);
+            const exact = columns.find(c => norm(c) === key);
+
+            if (exact) {
+                console.log(`[JHS Export] School column matched EXACTLY: "${keyword}" -> "${exact}"`);
+                return exact;
+            }
+        }
+
+        for (const keyword of candidates) {
+            const key = norm(keyword);
+            const partial = columns.find(c => norm(c).includes(key));
+
+            if (partial) {
+                console.log(`[JHS Export] School column matched PARTIALLY: "${keyword}" -> "${partial}"`);
+                return partial;
+            }
+        }
+
+        console.warn(
+            "[JHS Export] No school column detected. " +
+            "Add your real header text to the `candidates` array in getRealSchoolColumn()."
+        );
+
+        return null;
+    }
+
+    function getAdditionalColumns() {
+        const positionColumn = typeof getPositionColumn === "function"
+            ? getPositionColumn()
+            : null;
+
+        const incumbentColumn = typeof getIncumbentColumn === "function"
+            ? getIncumbentColumn()
+            : null;
+
+        const categoryColumn = typeof getCategoryColumn === "function"
+            ? getCategoryColumn()
+            : null;
+
+        const divisionColumn = typeof getDivisionColumn === "function"
+            ? getDivisionColumn()
+            : null;
+
+        const schoolColumn = getRealSchoolColumn();
+
+        return {
+            positionColumn,
+            incumbentColumn,
+            categoryColumn,
+            divisionColumn,
+            schoolColumn
+        };
+    }
+
+    /*
+     * Normalize the user's required Plantilla Assignment groups.
+     * Any unmatched value becomes JHS.
+     */
+    function normalizePlantillaAssignment(value) {
+        const text = safeNormalizeText(value)
+            .replace(/\./g, "")
+            .replace(/\s+/g, " ");
+
+        if (!text) return "JHS";
+
+        if (
+            text.includes("OFFICE OF THE SCHOOLS DIVISION SUPERINTENDENT") ||
+            text === "OSDS" ||
+            text.includes(" OSDS")
+        ) return "OSDS";
+
+        if (
+            text.includes("CURRICULUM IMPLEMENTATION DIVISION") ||
+            text === "CID" ||
+            text.includes(" CID")
+        ) return "CID";
+
+        if (
+            text.includes("SCHOOL GOVERNANCE AND OPERATIONS DIVISION") ||
+            text === "SGOD" ||
+            text.includes(" SGOD")
+        ) return "SGOD";
+
+        if (
+            text.includes("DIVISION OF CAVITE ALS") ||
+            text.includes("DIVISION OF CAVITE - ALS") ||
+            text === "ALS"
+        ) return "ALS";
+
+        if (
+            text.includes("KINDERGARTEN EDUCATION") ||
+            text === "KINDER" ||
+            text.includes(" KINDER")
+        ) return "KINDER";
+
+        if (
+            text.includes("ELEMENTARY EDUCATION") ||
+            text === "ELEM" ||
+            text.includes(" ELEM")
+        ) return "ELEM";
+
+        if (
+            text.includes("SENIOR HIGH SCHOOL EDUCATION") ||
+            text.includes("SENIOR HIGH SCHOOL") ||
+            text === "SHS" ||
+            text.includes(" SHS")
+        ) return "SHS";
+
+        /*
+         * The explicit requirement says all remaining assignments go to JHS.
+         */
+        return "JHS";
+    }
+
+    /*
+     * FIX #3: log an error instead of silently returning if the
+     * anchor element is missing, and fall back to <body> so the
+     * export buttons still get created (and can still be diagnosed).
+     */
+    function ensureAdditionalSummaryArea() {
+        if (document.getElementById("plantillaPositionSummarySection")) return;
+
+        const wrapperHtml = `
+            <div id="additionalSummaryWrapper" class="space-y-6 mt-6">
+                <section id="plantillaPositionSummarySection"
+                    class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+                    <div class="p-6 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800">
+                                BREAKDOWN OF FILLED AND UNFILLED POSITIONS
+                            </h2>
+                            <p id="plantillaSummaryAsOf" class="text-sm text-slate-500 mt-1">
+                                PER POSITION PER PLANTILLA ASSIGNMENT
+                            </p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="exportPlantillaSummaryBtn"
+                                type="button"
+                                class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium">
+                                ⬇ Export Plantilla Summary
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="max-h-96 overflow-x-auto overflow-y-auto">
+                        <table class="min-w-full text-sm border-collapse">
+                            <thead class="bg-slate-800 text-white">
+                                <tr>
+                                    <th class="border border-slate-600 px-4 py-3 text-left">PLANTILLA ASSIGNMENT</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-left">CATEGORY</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-left">POSITION</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-center">FILLED</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-center">UNFILLED</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-center">TOTAL</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-center">% FILLED</th>
+                                </tr>
+                            </thead>
+                            <tbody id="plantillaPositionSummaryBody"></tbody>
+                            <tfoot id="plantillaPositionSummaryFooter"
+                                class="bg-slate-100 font-bold"></tfoot>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="jhsSchoolSummarySection"
+                    class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+                    <div class="p-6 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800">
+                                JHS SUMMARY BY SCHOOL AND POSITION
+                            </h2>
+                            <p id="jhsSchoolSummaryAsOf" class="text-sm text-slate-500 mt-1">
+                                GROUPED INTO IU AND NON-IU
+                            </p>
+                        </div>
+                        <button id="exportJhsSchoolSummaryBtn"
+                            type="button"
+                            class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">
+                            ⬇ Export JHS IU / NON-IU
+                        </button>
+                    </div>
+
+                    <div class="max-h-96 overflow-x-auto overflow-y-auto">
+                        <table class="min-w-full text-sm border-collapse">
+                            <thead class="bg-slate-800 text-white">
+                                <tr>
+                                    <th class="border border-slate-600 px-4 py-3 text-center">NO.</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-left">GROUP</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-left">SCHOOL</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-left">POSITION</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-center">FILLED</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-center">UNFILLED</th>
+                                    <th class="border border-slate-600 px-4 py-3 text-center">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jhsSchoolSummaryBody"></tbody>
+                            <tfoot id="jhsSchoolSummaryFooter"
+                                class="bg-slate-100 font-bold"></tfoot>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        `;
+
+        const anchor = document.getElementById("summarySection");
+
+        if (anchor && anchor.parentNode) {
+            anchor.insertAdjacentHTML("afterend", wrapperHtml);
+            return;
+        }
+
+        console.error(
+            "[Additional Summaries] #summarySection was not found in the DOM. " +
+            "Appending the Plantilla/JHS section to the end of <body> instead " +
+            "so the export buttons are still available."
+        );
+
+        document.body.insertAdjacentHTML("beforeend", wrapperHtml);
+    }
+
+    function classifyAdditionalRow(row, columns) {
+        const position = String(row[columns.positionColumn] ?? "").trim();
+
+        if (!position) return null;
+
+        const category = typeof determineCategory === "function"
+            ? determineCategory(
+                position,
+                columns.categoryColumn ? row[columns.categoryColumn] : ""
+            )
+            : "";
+
+        const rawPlantilla = columns.divisionColumn
+            ? row[columns.divisionColumn]
+            : "";
+
+        const plantilla = normalizePlantillaAssignment(rawPlantilla);
+
+        const vacant = typeof isVacant === "function"
+            ? isVacant(row[columns.incumbentColumn])
+            : !String(row[columns.incumbentColumn] ?? "").trim();
+
+        return {
+            position,
+            category: category || "UNCLASSIFIED",
+            plantilla,
+            filled: vacant ? 0 : 1,
+            unfilled: vacant ? 1 : 0,
+            school: columns.schoolColumn
+                ? String(row[columns.schoolColumn] ?? "").trim()
+                : ""
+        };
+    }
+
+    function generatePlantillaPositionSummary() {
+        if (typeof currentData === "undefined" || !currentData.length) {
+            alert("Please upload and load an Excel worksheet first.");
+            return [];
+        }
+
+        const columns = getAdditionalColumns();
+
+        if (!columns.positionColumn) {
+            alert("POSITION TITLE column could not be detected.");
+            return [];
+        }
+
+        if (!columns.incumbentColumn) {
+            alert("NAME OF INCUMBENT column could not be detected.");
+            return [];
+        }
+
+        const map = new Map();
+
+        currentData.forEach(row => {
+            const item = classifyAdditionalRow(row, columns);
+            if (!item || !item.category || item.category === "UNCLASSIFIED") return;
+
+            const key = [
+                item.plantilla,
+                item.category,
+                item.position
+            ].join("|||");
+
+            if (!map.has(key)) {
+                map.set(key, {
+                    plantilla: item.plantilla,
+                    category: item.category,
+                    position: item.position,
+                    filled: 0,
+                    unfilled: 0
+                });
+            }
+
+            const target = map.get(key);
+            target.filled += item.filled;
+            target.unfilled += item.unfilled;
+        });
+
+        const order = {
+            OSDS: 1,
+            CID: 2,
+            SGOD: 3,
+            ALS: 4,
+            KINDER: 5,
+            ELEM: 6,
+            SHS: 7,
+            JHS: 8
+        };
+
+        return [...map.values()]
+            .sort((a, b) => {
+                const oa = order[a.plantilla] ?? 99;
+                const ob = order[b.plantilla] ?? 99;
+
+                if (oa !== ob) return oa - ob;
+                if (a.category !== b.category) return a.category.localeCompare(b.category);
+                return a.position.localeCompare(b.position);
+            })
+            .map(item => ({
+                ...item,
+                total: item.filled + item.unfilled,
+                percentFilled: item.filled + item.unfilled
+                    ? (item.filled / (item.filled + item.unfilled)) * 100
+                    : 0
+            }));
+    }
+
+    function renderPlantillaPositionSummary() {
+        const body = document.getElementById("plantillaPositionSummaryBody");
+        const footer = document.getElementById("plantillaPositionSummaryFooter");
+
+        if (!body || !footer) return;
+
+        const data = generatePlantillaPositionSummary();
+
+        body.innerHTML = "";
+
+        let totalFilled = 0;
+        let totalUnfilled = 0;
+
+        data.forEach(item => {
+            totalFilled += item.filled;
+            totalUnfilled += item.unfilled;
+
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-slate-50";
+
+            tr.innerHTML = `
+                <td class="border border-slate-200 px-4 py-3 font-semibold">
+                    ${typeof escapeHtml === "function" ? escapeHtml(item.plantilla) : item.plantilla}
+                </td>
+                <td class="border border-slate-200 px-4 py-3">
+                    ${typeof escapeHtml === "function" ? escapeHtml(item.category) : item.category}
+                </td>
+                <td class="border border-slate-200 px-4 py-3">
+                    ${typeof escapeHtml === "function" ? escapeHtml(item.position) : item.position}
+                </td>
+                <td class="border border-slate-200 px-4 py-3 text-center text-emerald-700">
+                    ${item.filled}
+                </td>
+                <td class="border border-slate-200 px-4 py-3 text-center text-red-700">
+                    ${item.unfilled}
+                </td>
+                <td class="border border-slate-200 px-4 py-3 text-center font-bold">
+                    ${item.total}
+                </td>
+                <td class="border border-slate-200 px-4 py-3 text-center font-semibold">
+                    ${item.percentFilled.toFixed(2)}%
+                </td>
+            `;
+
+            body.appendChild(tr);
+        });
+
+        const grandTotal = totalFilled + totalUnfilled;
+
+        footer.innerHTML = `
+            <tr>
+                <td colspan="3" class="border border-slate-300 px-4 py-4">
+                    GRAND TOTAL
+                </td>
+                <td class="border border-slate-300 px-4 py-4 text-center text-emerald-700">
+                    ${totalFilled}
+                </td>
+                <td class="border border-slate-300 px-4 py-4 text-center text-red-700">
+                    ${totalUnfilled}
+                </td>
+                <td class="border border-slate-300 px-4 py-4 text-center">
+                    ${grandTotal}
+                </td>
+                <td class="border border-slate-300 px-4 py-4 text-center">
+                    ${grandTotal ? ((totalFilled / grandTotal) * 100).toFixed(2) : "0.00"}%
+                </td>
+            </tr>
+        `;
+
+        const dateElement = document.getElementById("summaryDate");
+        const dateTarget = document.getElementById("plantillaSummaryAsOf");
+
+        if (dateElement?.value && dateTarget) {
+            const d = new Date(dateElement.value + "-01T00:00:00");
+            dateTarget.textContent =
+                `AS OF ${d.toLocaleString("en-US", {
+                    month: "long",
+                    year: "numeric"
+                }).toUpperCase()} • PER POSITION PER PLANTILLA ASSIGNMENT`;
+        }
+
+        return data;
+    }
+
+    function generateJhsSchoolSummary() {
+        if (typeof currentData === "undefined" || !currentData.length) {
+            alert("Please upload and load an Excel worksheet first.");
+            return [];
+        }
+
+        const columns = getAdditionalColumns();
+
+        if (!columns.positionColumn || !columns.incumbentColumn) {
+            alert("POSITION TITLE and NAME OF INCUMBENT columns are required.");
+            return [];
+        }
+
+        if (!columns.schoolColumn) {
+            alert(
+                "A SCHOOL / SCHOOL NAME column could not be detected.\n\n" +
+                "The JHS school summary needs the school name in the Excel data.\n" +
+                "Open the browser console (F12) — it lists the columns that were found " +
+                "in your sheet so you can see the exact header text to add."
+            );
+            return [];
+        }
+
+        const map = new Map();
+
+        currentData.forEach(row => {
+            const item = classifyAdditionalRow(row, columns);
+            if (!item) return;
+
+            /*
+             * Only JHS rows are included.
+             * normalizePlantillaAssignment sends every unrecognized
+             * assignment to JHS, as required.
+             */
+            if (item.plantilla !== "JHS") return;
+
+            const school = item.school.trim();
+            if (!school) return;
+
+            const group = isIU(school) ? "IU" : "NON-IU";
+
+            const key = [
+                group,
+                normalizeSchool(school),
+                item.position
+            ].join("|||");
+
+            if (!map.has(key)) {
+                map.set(key, {
+                    group,
+                    school: normalizeSchool(school),
+                    position: item.position,
+                    filled: 0,
+                    unfilled: 0
+                });
+            }
+
+            const target = map.get(key);
+            target.filled += item.filled;
+            target.unfilled += item.unfilled;
+        });
+
+        return [...map.values()]
+            .sort((a, b) => {
+                const groupOrder = {
+                    "NON-IU": 1,
+                    "IU": 2
+                };
+
+                const go = groupOrder[a.group] - groupOrder[b.group];
+                if (go !== 0) return go;
+
+                const schoolOrder = a.school.localeCompare(b.school);
+                if (schoolOrder !== 0) return schoolOrder;
+
+                return a.position.localeCompare(b.position);
+            })
+            .map(item => ({
+                ...item,
+                total: item.filled + item.unfilled
+            }));
+    }
+
+    function renderJhsSchoolSummary() {
+        const body = document.getElementById("jhsSchoolSummaryBody");
+        const footer = document.getElementById("jhsSchoolSummaryFooter");
+
+        if (!body || !footer) return;
+
+        const data = generateJhsSchoolSummary();
+
+        body.innerHTML = "";
+
+        let lastGroup = "";
+        let lastSchool = "";
+        let schoolNo = 0;
+
+        let totalFilled = 0;
+        let totalUnfilled = 0;
+
+        data.forEach(item => {
+            if (item.group !== lastGroup) {
+                lastGroup = item.group;
+                lastSchool = "";
+            }
+
+            if (item.school !== lastSchool) {
+                schoolNo++;
+                lastSchool = item.school;
+            }
+
+            totalFilled += item.filled;
+            totalUnfilled += item.unfilled;
+
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-slate-50";
+
+            tr.innerHTML = `
+                <td class="border border-slate-200 px-4 py-3 text-center font-semibold">
+                    ${schoolNo}
+                </td>
+                <td class="border border-slate-200 px-4 py-3 font-bold ${
+                    item.group === "IU"
+                        ? "text-indigo-700"
+                        : "text-slate-700"
+                }">
+                    ${item.group}
+                </td>
+                <td class="border border-slate-200 px-4 py-3 font-semibold">
+                    ${typeof escapeHtml === "function" ? escapeHtml(item.school) : item.school}
+                </td>
+                <td class="border border-slate-200 px-4 py-3">
+                    ${typeof escapeHtml === "function" ? escapeHtml(item.position) : item.position}
+                </td>
+                <td class="border border-slate-200 px-4 py-3 text-center text-emerald-700">
+                    ${item.filled}
+                </td>
+                <td class="border border-slate-200 px-4 py-3 text-center text-red-700">
+                    ${item.unfilled}
+                </td>
+                <td class="border border-slate-200 px-4 py-3 text-center font-bold">
+                    ${item.total}
+                </td>
+            `;
+
+            body.appendChild(tr);
+        });
+
+        const grandTotal = totalFilled + totalUnfilled;
+
+        footer.innerHTML = `
+            <tr>
+                <td colspan="4" class="border border-slate-300 px-4 py-4">
+                    JHS GRAND TOTAL
+                </td>
+                <td class="border border-slate-300 px-4 py-4 text-center text-emerald-700">
+                    ${totalFilled}
+                </td>
+                <td class="border border-slate-300 px-4 py-4 text-center text-red-700">
+                    ${totalUnfilled}
+                </td>
+                <td class="border border-slate-300 px-4 py-4 text-center">
+                    ${grandTotal}
+                </td>
+            </tr>
+        `;
+
+        const dateElement = document.getElementById("summaryDate");
+        const dateTarget = document.getElementById("jhsSchoolSummaryAsOf");
+
+        if (dateElement?.value && dateTarget) {
+            const d = new Date(dateElement.value + "-01T00:00:00");
+            dateTarget.textContent =
+                `AS OF ${d.toLocaleString("en-US", {
+                    month: "long",
+                    year: "numeric"
+                }).toUpperCase()} • JHS GROUPED INTO IU AND NON-IU`;
+        }
+
+        return data;
+    }
+
+    function exportPlantillaSummary() {
+        if (typeof XLSX === "undefined") {
+            alert("Excel export library is missing.");
+            return;
+        }
+
+        const data = generatePlantillaPositionSummary();
+
+        if (!data.length) {
+            alert("No Plantilla summary data is available.");
+            return;
+        }
+
+        const aoa = [
+            ["BREAKDOWN OF FILLED AND UNFILLED POSITIONS"],
+            [document.getElementById("plantillaSummaryAsOf")?.textContent || ""],
+            [],
+            [
+                "PLANTILLA ASSIGNMENT",
+                "CATEGORY",
+                "POSITION",
+                "FILLED",
+                "UNFILLED",
+                "TOTAL",
+                "% FILLED"
+            ]
+        ];
+
+        data.forEach(item => {
+            aoa.push([
+                item.plantilla,
+                item.category,
+                item.position,
+                item.filled,
+                item.unfilled,
+                item.total,
+                item.percentFilled / 100
+            ]);
+        });
+
+        const filled = data.reduce((s, x) => s + x.filled, 0);
+        const unfilled = data.reduce((s, x) => s + x.unfilled, 0);
+        const total = filled + unfilled;
+
+        aoa.push([
+            "GRAND TOTAL",
+            "",
+            "",
+            filled,
+            unfilled,
+            total,
+            total ? filled / total : 0
+        ]);
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        ws["!merges"] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } }
+        ];
+
+        ws["!cols"] = [
+            { wch: 25 },
+            { wch: 20 },
+            { wch: 45 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 }
+        ];
+
+        for (let r = 4; r < aoa.length; r++) {
+            const cell = XLSX.utils.encode_cell({ r, c: 6 });
+            if (ws[cell]) ws[cell].z = "0.00%";
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, "PLANTILLA POSITION");
+        XLSX.writeFile(wb, "BREAKDOWN_PER_PLANTILLA_POSITION.xlsx");
+    }
+
+    function exportJhsSchoolSummary() {
+        if (typeof XLSX === "undefined") {
+            alert("Excel export library is missing.");
+            return;
+        }
+
+        const data = generateJhsSchoolSummary();
+
+        if (!data.length) {
+            alert("No JHS school summary data is available.");
+            return;
+        }
+
+        const aoa = [
+            ["JHS SUMMARY BY SCHOOL AND POSITION"],
+            [document.getElementById("jhsSchoolSummaryAsOf")?.textContent || ""],
+            [],
+            [
+                "NO.",
+                "GROUP",
+                "SCHOOL",
+                "POSITION",
+                "FILLED",
+                "UNFILLED",
+                "TOTAL"
+            ]
+        ];
+
+        let lastGroup = "";
+        let lastSchool = "";
+        let no = 0;
+
+        data.forEach(item => {
+            if (item.group !== lastGroup) {
+                lastGroup = item.group;
+                lastSchool = "";
+            }
+
+            if (item.school !== lastSchool) {
+                no++;
+                lastSchool = item.school;
+            }
+
+            aoa.push([
+                no,
+                item.group,
+                item.school,
+                item.position,
+                item.filled,
+                item.unfilled,
+                item.total
+            ]);
+        });
+
+        const filled = data.reduce((s, x) => s + x.filled, 0);
+        const unfilled = data.reduce((s, x) => s + x.unfilled, 0);
+
+        aoa.push([
+            "",
+            "",
+            "JHS GRAND TOTAL",
+            "",
+            filled,
+            unfilled,
+            filled + unfilled
+        ]);
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        ws["!merges"] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } }
+        ];
+
+        ws["!cols"] = [
+            { wch: 8 },
+            { wch: 12 },
+            { wch: 55 },
+            { wch: 40 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 }
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, "JHS IU NON-IU");
+        XLSX.writeFile(wb, "JHS_FILLED_UNFILLED_IU_NON_IU.xlsx");
+    }
+
+    function generateAllAdditionalSummaries() {
+        ensureAdditionalSummaryArea();
+        renderPlantillaPositionSummary();
+        renderJhsSchoolSummary();
+    }
+
+    /*
+     * Public functions are exposed so the existing application
+     * can also call them manually if desired.
+     */
+    window.generatePlantillaPositionSummary = generatePlantillaPositionSummary;
+    window.renderPlantillaPositionSummary = renderPlantillaPositionSummary;
+    window.generateJhsSchoolSummary = generateJhsSchoolSummary;
+    window.renderJhsSchoolSummary = renderJhsSchoolSummary;
+    window.generateAllAdditionalSummaries = generateAllAdditionalSummaries;
+    window.exportPlantillaSummary = exportPlantillaSummary;
+    window.exportJhsSchoolSummary = exportJhsSchoolSummary;
+
+    /*
+     * FIX #1 (the main bug):
+     * Use EVENT DELEGATION on `document` instead of attaching click
+     * listeners directly to the button elements. The buttons get
+     * destroyed and recreated every time the sheet dropdown changes
+     * and "Generate Summary" is clicked again — direct listeners on
+     * the old buttons are lost when those elements are removed, and
+     * nothing re-attaches listeners to the newly created buttons.
+     * A single delegated listener on `document`, by contrast, keeps
+     * working no matter how many times the buttons are rebuilt,
+     * because it checks event.target.id at click time rather than
+     * relying on a reference to a specific (possibly stale) element.
+     */
+    document.addEventListener("click", function (event) {
+        if (event.target && event.target.id === "exportPlantillaSummaryBtn") {
+            exportPlantillaSummary();
+        }
+
+        if (event.target && event.target.id === "exportJhsSchoolSummaryBtn") {
+            exportJhsSchoolSummary();
+        }
+    });
+
+    function initializeAdditionalSummaries() {
+        ensureAdditionalSummaryArea();
+
+        /*
+         * Regenerate the two additional summaries whenever the
+         * existing Generate Summary button is used.
+         */
+        document.getElementById("generateBtn")
+            ?.addEventListener("click", () => {
+                setTimeout(generateAllAdditionalSummaries, 0);
+            });
+
+        document.getElementById("sheetSelect")
+            ?.addEventListener("change", () => {
+                setTimeout(() => {
+                    const sections = document.getElementById("additionalSummaryWrapper");
+                    if (sections) sections.remove();
+                }, 0);
+            });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeAdditionalSummaries);
+    } else {
+        initializeAdditionalSummaries();
+    }
+})();
+
 </script>
+
 
 
 </body>
