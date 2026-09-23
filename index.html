@@ -118,10 +118,10 @@
 
                 </div>
 
-                <div
-                    id="uploadedFiles"
-                    class="space-y-2">
-                </div>
+               <div 
+                id="uploadedFiles" 
+                class="space-y-2 max-h-96 overflow-y-auto pr-2">
+            </div>
 
             </div>
 
@@ -210,7 +210,7 @@
 
             <div
                 id="mergeOrder"
-                class="space-y-3">
+                class="space-y-3 max-h-96 overflow-y-auto pr-2">
 
                 <div class="text-center py-8 text-slate-400">
                     No files uploaded yet.
@@ -254,61 +254,59 @@
     <!-- =========================================================
      BACK TO TOP BUTTON
 ========================================================= -->
-
-<button
-    id="backToTopBtn"
-    type="button"
-    aria-label="Back to top"
-    title="Back to top"
-    class="hidden fixed bottom-6 right-6 z-50
-           w-12 h-12
-           bg-indigo-600 hover:bg-indigo-700
-           text-white rounded-full
-           shadow-lg hover:shadow-xl
-           items-center justify-center
-           transition-all duration-300
-           hover:scale-110"
->
-    <!-- Up Arrow -->
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="2.5"
-        stroke="currentColor"
-        class="w-6 h-6"
+    <button
+        id="backToTopBtn"
+        type="button"
+        aria-label="Back to top"
+        title="Back to top"
+        class="hidden fixed bottom-6 right-6 z-50
+            w-12 h-12
+            bg-indigo-600 hover:bg-indigo-700
+            text-white rounded-full
+            shadow-lg hover:shadow-xl
+            items-center justify-center
+            transition-all duration-300
+            hover:scale-110"
     >
-        <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M5 15l7-7 7 7"
-        />
-    </svg>
-</button>
+        <!-- Up Arrow -->
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2.5"
+            stroke="currentColor"
+            class="w-6 h-6"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M5 15l7-7 7 7"
+            />
+        </svg>
+    </button>
 
+    <script>
+        const backToTopBtn = document.getElementById("backToTopBtn");
 
-<script>
-    const backToTopBtn = document.getElementById("backToTopBtn");
-
-    // Show / hide button while scrolling
-    window.addEventListener("scroll", () => {
-        if (window.scrollY > 400) {
-            backToTopBtn.classList.remove("hidden");
-            backToTopBtn.classList.add("flex");
-        } else {
-            backToTopBtn.classList.add("hidden");
-            backToTopBtn.classList.remove("flex");
-        }
-    });
-
-    // Smooth scroll to top
-    backToTopBtn.addEventListener("click", () => {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
+        // Show / hide button while scrolling
+        window.addEventListener("scroll", () => {
+            if (window.scrollY > 400) {
+                backToTopBtn.classList.remove("hidden");
+                backToTopBtn.classList.add("flex");
+            } else {
+                backToTopBtn.classList.add("hidden");
+                backToTopBtn.classList.remove("flex");
+            }
         });
-    });
-</script>
+
+        // Smooth scroll to top
+        backToTopBtn.addEventListener("click", () => {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+    </script>
 
         <!-- =========================================================
         FOOTER
@@ -481,119 +479,908 @@
 
 
 
-    <script>
+    ```html
+<script>
 
-        /*
-        |--------------------------------------------------------------------------
-        | GLOBAL VARIABLES
-        |--------------------------------------------------------------------------
-        */
+/*
+|--------------------------------------------------------------------------
+| GLOBAL VARIABLES
+|--------------------------------------------------------------------------
+*/
 
-        let uploadedFiles = [];
+let uploadedFiles = [];
 
-        let mergeOrder = [];
+let mergeOrder = [];
 
-        let mergedWorkbook = null;
+let mergedWorkbook = null;
 
-        let mergedData = [];
+let mergedData = [];
 
-        let sortableInstance = null;
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | DOM ELEMENTS
-        |--------------------------------------------------------------------------
-        */
-
-        const excelFilesInput =
-            document.getElementById("excelFiles");
-
-        const uploadedFilesContainer =
-            document.getElementById("uploadedFiles");
-
-        const fileList =
-            document.getElementById("fileList");
-
-        const fileCount =
-            document.getElementById("fileCount");
-
-        const openChecklistBtn =
-            document.getElementById("openChecklistBtn");
-
-        const mergeBtn =
-            document.getElementById("mergeBtn");
-
-        const downloadBtn =
-            document.getElementById("downloadBtn");
-
-        const checklistModal =
-            document.getElementById("checklistModal");
-
-        const checklistContainer =
-            document.getElementById("checklistContainer");
-
-        const mergeOrderContainer =
-            document.getElementById("mergeOrder");
-
-        const previewContainer =
-            document.getElementById("previewContainer");
+let sortableInstance = null;
 
 
+/*
+|--------------------------------------------------------------------------
+| DOM ELEMENTS
+|--------------------------------------------------------------------------
+*/
 
-        /*
-        |--------------------------------------------------------------------------
-        | UPLOAD EXCEL FILES
-        |--------------------------------------------------------------------------
-        */
+const excelFilesInput =
+    document.getElementById("excelFiles");
 
-        excelFilesInput.addEventListener("change", async function (event) {
+const uploadedFilesContainer =
+    document.getElementById("uploadedFiles");
 
-            const files = Array.from(event.target.files);
+const fileList =
+    document.getElementById("fileList");
 
-            if (files.length === 0) {
-                return;
+const fileCount =
+    document.getElementById("fileCount");
+
+const openChecklistBtn =
+    document.getElementById("openChecklistBtn");
+
+const mergeBtn =
+    document.getElementById("mergeBtn");
+
+const downloadBtn =
+    document.getElementById("downloadBtn");
+
+const checklistModal =
+    document.getElementById("checklistModal");
+
+const checklistContainer =
+    document.getElementById("checklistContainer");
+
+const mergeOrderContainer =
+    document.getElementById("mergeOrder");
+
+const previewContainer =
+    document.getElementById("previewContainer");
+
+
+/*
+|--------------------------------------------------------------------------
+| IU SCHOOL MASTER LIST + ALIASES
+|--------------------------------------------------------------------------
+|
+| The first value is the official/reference school name.
+|
+| Additional values are accepted abbreviations.
+|
+| Example:
+|
+| MUNTING ILOG INTEGRATED NATIONAL HIGH SCHOOL
+| MUNTING ILOG INHS
+| MUNTING ILOG IHS
+|
+| All are treated as the same IU school.
+|--------------------------------------------------------------------------
+*/
+
+const IU_SCHOOLS = {
+
+    "ALFONSO INTEGRATED HIGH SCHOOL": [
+        "ALFONSO INTEGRATED HIGH SCHOOL",
+        "ALFONSO IHS"
+    ],
+
+    "AMADEO NATIONAL HIGH SCHOOL": [
+        "AMADEO NATIONAL HIGH SCHOOL",
+        "AMADEO NHS"
+    ],
+
+    "AMAYA SCHOOL OF HOME INDUSTRIES": [
+        "AMAYA SCHOOL OF HOME INDUSTRIES",
+        "ASHI"
+    ],
+
+    "BAGBAG NATIONAL HIGH SCHOOL": [
+        "BAGBAG NATIONAL HIGH SCHOOL",
+        "BAGBAG NHS",
+        "BAGBAG NATIONAL HIGH SCHOOL LIGTONG NATIONAL HIGH SCHOOL",
+        "LIGTONG NATIONAL HIGH SCHOOL"
+    ],
+
+    "BENDITA INTEGRATED HIGH SCHOOL": [
+        "BENDITA INTEGRATED HIGH SCHOOL",
+        "BENDITA IHS"
+    ],
+
+    "BINAKAYAN NATIONAL HIGH SCHOOL": [
+        "BINAKAYAN NATIONAL HIGH SCHOOL",
+        "BINAKAYAN NHS"
+    ],
+
+    "BUCAL NATIONAL INTEGRATED SCHOOL": [
+        "BUCAL NATIONAL INTEGRATED SCHOOL",
+        "BUCAL NIS",
+        "BUCAL INTEGRATED SCHOOL"
+    ],
+
+    "BULIHAN INTEGRATED NATIONAL HIGH SCHOOL": [
+        "BULIHAN INTEGRATED NATIONAL HIGH SCHOOL",
+        "BULIHAN INHS"
+    ],
+
+    "CARMONA NATIONAL HIGH SCHOOL": [
+        "CARMONA NATIONAL HIGH SCHOOL",
+        "CARMONA NHS"
+    ],
+
+    "CAVITE SCIENCE INTEGRATED SCHOOL": [
+        "CAVITE SCIENCE INTEGRATED SCHOOL",
+        "CAVITE SCIENCE IS",
+        "CAVITE SCIENCE INTEGRATED SCHOOL IS"
+    ],
+
+    "CONSTANCIO E. AURE, SR. NATIONAL HIGH SCHOOL": [
+        "CONSTANCIO E. AURE, SR. NATIONAL HIGH SCHOOL",
+        "CONSTANCIO E. AURE SR. NHS",
+        "CONSTANCIO E AURE SR NHS",
+        "CONSTANCIO E. AURE, SR. NHS",
+        "CONSTANCIO AURE NHS"
+    ],
+
+    "EMILIANO TRIA TIRONA MEMORIAL NATIONAL INTEGRATED HIGH SCHOOL": [
+        "EMILIANO TRIA TIRONA MEMORIAL NATIONAL INTEGRATED HIGH SCHOOL",
+        "ETTMNIHS",
+        "ETT MNIHS",
+        "ETTMNIHS"
+    ],
+
+    "FRANCISCO OSORIO INTEGRATED SENIOR HIGH SCHOOL": [
+        "FRANCISCO OSORIO INTEGRATED SENIOR HIGH SCHOOL",
+        "F. OSORIO ISHS",
+        "F OSORIO ISHS",
+        "FRANCISCO OSORIO ISHS"
+    ],
+
+    "FRANCISO P. TOLENTINO INTEGRATED HIGH SCHOOL": [
+        "FRANCISO P. TOLENTINO INTEGRATED HIGH SCHOOL",
+        "F. P. TOLENTINO IHS",
+        "F P TOLENTINO IHS",
+        "F.P. TOLENTINO IHS",
+        "FP TOLENTINO IHS"
+    ],
+
+    "GEN. EMILIO AGUINALDO - BAILEN INTEGRATED SCHOOL": [
+        "GEN. EMILIO AGUINALDO - BAILEN INTEGRATED SCHOOL",
+        "GEN. E. AGUINALDO-BAILEN IS",
+        "GEN E AGUINALDO BAILEN IS",
+        "GEN E AGUINALDO BAILEN INTEGRATED SCHOOL"
+    ],
+
+    "GEN. MARIANO ALVAREZ TECHNICAL HIGH SCHOOL": [
+        "GEN. MARIANO ALVAREZ TECHNICAL HIGH SCHOOL",
+        "GMATHS",
+        "GEN MARIANO ALVAREZ TECHNICAL HIGH SCHOOL"
+    ],
+
+    "GEN. VITO BELARMINO INTEGRATED NATIONAL HIGH SCHOOL": [
+        "GEN. VITO BELARMINO INTEGRATED NATIONAL HIGH SCHOOL",
+        "GEN. VITO BELARMINO INHS",
+        "GEN VITO BELARMINO INHS",
+        "VITO BELARMINO INHS"
+    ],
+
+    "KAONG NATIONAL HIGH SCHOOL": [
+        "KAONG NATIONAL HIGH SCHOOL",
+        "KAONG NHS"
+    ],
+
+    "KAYTITINGA INTEGRATED SCHOOL": [
+        "KAYTITINGA INTEGRATED SCHOOL",
+        "KAYTITINGA IS"
+    ],
+
+    "LUCSUHIN INTEGRATED SCHOOL": [
+        "LUCSUHIN INTEGRATED SCHOOL",
+        "LUCSUHIN IS"
+    ],
+
+    "LUIS AGUADO NATIONAL HIGH SCHOOL": [
+        "LUIS AGUADO NATIONAL HIGH SCHOOL",
+        "LUIS AGUADO NHS"
+    ],
+
+    "LUMAMPONG INTEGRATED NATIONAL HIGH SCHOOL": [
+        "LUMAMPONG INTEGRATED NATIONAL HIGH SCHOOL",
+        "LUMAMPONG INHS"
+    ],
+
+    "LUMIL INTEGRATED NATIONAL HIGH SCHOOL": [
+        "LUMIL INTEGRATED NATIONAL HIGH SCHOOL",
+        "LUMIL INHS"
+    ],
+
+    "MALABAG NATIONAL HIGH SCHOOL": [
+        "MALABAG NATIONAL HIGH SCHOOL",
+        "MALABAG NHS"
+    ],
+
+    "MARAGONDON NATIONAL HIGH SCHOOL": [
+        "MARAGONDON NATIONAL HIGH SCHOOL",
+        "MARAGONDON NHS"
+    ],
+
+    "MUNTING ILOG INTEGRATED NATIONAL HIGH SCHOOL": [
+        "MUNTING ILOG INTEGRATED NATIONAL HIGH SCHOOL",
+        "MUNTING ILOG INHS",
+        "MUNTING ILOG IHS",
+        "MUNTING ILOG INTEGRATED NHS"
+    ],
+
+    "NAIC COASTAL INTEGRATED NATIONAL HIGH SCHOOL": [
+        "NAIC COASTAL INTEGRATED NATIONAL HIGH SCHOOL",
+        "NAIC COASTAL INHS",
+        "NAIC COASTAL NHS"
+    ],
+
+    "NAIC INTEGRATED NATIONAL HIGH SCHOOL": [
+        "NAIC INTEGRATED NATIONAL HIGH SCHOOL",
+        "NAIC INHS",
+        "NAIC IHS"
+    ],
+
+    "NOVELETA NATIONAL HIGH SCHOOL": [
+        "NOVELETA NATIONAL HIGH SCHOOL",
+        "NOVELETA NHS"
+    ],
+
+    "ROSARIO NATIONAL HIGH SCHOOL": [
+        "ROSARIO NATIONAL HIGH SCHOOL",
+        "ROSARIO NHS",
+        "ROSARIO NATIONAL HIGH SCHOOL FORMERLY A ABADILLA NATIONAL HIGH SCHOOL",
+        "A. ABADILLA NATIONAL HIGH SCHOOL",
+        "A ABADILLA NATIONAL HIGH SCHOOL",
+        "A ABADILLA NHS"
+    ],
+
+    "SAN JOSE COMMUNITY HIGH SCHOOL": [
+        "SAN JOSE COMMUNITY HIGH SCHOOL",
+        "SAN JOSE CHS"
+    ],
+
+    "TAGAYTAY CITY NATIONAL HIGH SCHOOL": [
+        "TAGAYTAY CITY NATIONAL HIGH SCHOOL",
+        "TAGAYTAY CITY NHS",
+        "TAGAYTAY CITY NATIONAL HIGH SCHOOL INTEGRATED SENIOR HIGH SCHOOL",
+        "TAGAYTAY CITY NHS ISHS",
+        "TAGAYTAY CITY NHS-ISHS"
+    ],
+
+    "TAGAYTAY CITY SCIENCE NATIONAL HIGH SCHOOL": [
+        "TAGAYTAY CITY SCIENCE NATIONAL HIGH SCHOOL",
+        "TAGAYTAY CITY SCIENCE NHS",
+        "TAGAYTAY CITY SCIENCE NATIONAL HIGH SCHOOL INTEGRATED SENIOR HIGH SCHOOL",
+        "TAGAYTAY CITY SCIENCE NHS ISHS",
+        "TAGAYTAY CITY SCIENCE NHS-ISHS"
+    ],
+
+    "TANZA NATIONAL COMPREHENSIVE HIGH SCHOOL": [
+        "TANZA NATIONAL COMPREHENSIVE HIGH SCHOOL",
+        "TANZA NCHS"
+    ],
+
+    "TANZA NATIONAL TRADE SCHOOL": [
+        "TANZA NATIONAL TRADE SCHOOL",
+        "TANZA NTS"
+    ],
+
+    "TERNATE INTEGRATED NATIONAL HIGH SCHOOL": [
+        "TERNATE INTEGRATED NATIONAL HIGH SCHOOL",
+        "TERNATE INHS",
+        "TERNATE IHS"
+    ],
+
+    "TERNATE WEST NATIONAL HIGH SCHOOL": [
+        "TERNATE WEST NATIONAL HIGH SCHOOL",
+        "TERNATE WEST NHS"
+    ],
+
+    "TRECE MARTIRES CITY NATIONAL HIGH SCHOOL": [
+        "TRECE MARTIRES CITY NATIONAL HIGH SCHOOL",
+        "TRECE MARTIRES CITY NHS",
+        "TRECE MARTIRES CITY NHS"
+    ]
+
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| NORMALIZE FILE / SCHOOL NAME
+|--------------------------------------------------------------------------
+|
+| This function:
+|
+| - Converts to uppercase
+| - Removes Excel extension
+| - Removes dates such as:
+|      -9-3-26
+|      9-3-26
+|      _9-3-26
+| - Normalizes punctuation
+| - Normalizes spaces
+|
+|--------------------------------------------------------------------------
+*/
+
+function normalizeSchoolName(name) {
+
+    let value = String(name || "")
+        .toUpperCase()
+        .trim();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | REMOVE EXCEL EXTENSION
+    |--------------------------------------------------------------------------
+    */
+
+    value = value.replace(
+        /\.(XLSX|XLS|CSV)$/i,
+        ""
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | REMOVE DATE AT END
+    |--------------------------------------------------------------------------
+    |
+    | Examples:
+    |
+    | SCHOOL-9-3-26
+    | SCHOOL 9-3-26
+    | SCHOOL_9-3-26
+    | SCHOOL-09-03-2026
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    value = value.replace(
+        /[\s_-]*\d{1,2}[-_]\d{1,2}[-_]\d{2,4}\s*$/i,
+        ""
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMALIZE DASHES / UNDERSCORES
+    |--------------------------------------------------------------------------
+    */
+
+    value = value.replace(
+        /[-_]+/g,
+        " "
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMALIZE PERIODS
+    |--------------------------------------------------------------------------
+    */
+
+    value = value.replace(
+        /\./g,
+        ""
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMALIZE COMMAS
+    |--------------------------------------------------------------------------
+    */
+
+    value = value.replace(
+        /,/g,
+        " "
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | REMOVE PARENTHESES
+    |--------------------------------------------------------------------------
+    */
+
+    value = value.replace(
+        /[()]/g,
+        " "
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMALIZE MULTIPLE SPACES
+    |--------------------------------------------------------------------------
+    */
+
+    value = value.replace(
+        /\s+/g,
+        " "
+    );
+
+
+    return value.trim();
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| IU SCHOOL DETECTION
+|--------------------------------------------------------------------------
+*/
+
+function isIUSchool(fileName) {
+
+    const normalizedFile =
+        normalizeSchoolName(fileName);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CHECK ALL OFFICIAL SCHOOL NAMES AND ALIASES
+    |--------------------------------------------------------------------------
+    */
+
+    for (
+        const aliases of Object.values(IU_SCHOOLS)
+    ) {
+
+        for (
+            const alias of aliases
+        ) {
+
+            const normalizedAlias =
+                normalizeSchoolName(alias);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | EXACT MATCH
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                normalizedFile ===
+                normalizedAlias
+            ) {
+
+                return true;
+
             }
 
 
-            for (const file of files) {
+            /*
+            |--------------------------------------------------------------------------
+            | FILE MAY HAVE EXTRA TEXT
+            |--------------------------------------------------------------------------
+            */
 
-                // Avoid duplicate filenames
-                const exists = uploadedFiles.some(
-                    item => item.name === file.name
+            if (
+                normalizedFile.startsWith(
+                    normalizedAlias + " "
+                )
+            ) {
+
+                return true;
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | FILE MAY HAVE A DASH AFTER SCHOOL NAME
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                normalizedFile.startsWith(
+                    normalizedAlias + "-"
+                )
+            ) {
+
+                return true;
+
+            }
+
+        }
+
+    }
+
+
+    return false;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| DETERMINE FILE CATEGORY
+|--------------------------------------------------------------------------
+|
+| 1 = OSDS
+| 2 = SGOD
+| 3 = CID
+| 4 = ALS
+| 5 = KINDER
+| 6 = ELEM
+| 7 = SHS
+| 8 = JHS NON-IU
+| 9 = JHS IU
+|
+|--------------------------------------------------------------------------
+*/
+
+function getFileCategory(fileItem) {
+
+    const fileName =
+        normalizeSchoolName(fileItem.name);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 1. OSDS
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        /\bOSDS\b/.test(fileName) ||
+        fileName.includes(
+            "OFFICE OF THE SCHOOLS DIVISION SUPERINTENDENT"
+        )
+    ) {
+        return 1;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 2. SGOD
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        /\bSGOD\b/.test(fileName) ||
+        fileName.includes(
+            "SCHOOL GOVERNANCE AND OPERATIONS DIVISION"
+        )
+    ) {
+        return 2;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 3. CID
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        /\bCID\b/.test(fileName) ||
+        fileName.includes(
+            "CURRICULUM IMPLEMENTATION DIVISION"
+        )
+    ) {
+        return 3;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 4. ALS
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        /\bALS\b/.test(fileName) ||
+        fileName.includes(
+            "ALTERNATIVE LEARNING SYSTEM"
+        )
+    ) {
+        return 4;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 5. KINDER
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        /\bKINDER\b/.test(fileName) ||
+        /\bKINDERGARTEN\b/.test(fileName)
+    ) {
+        return 5;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 6. ELEM
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        /\bELEM\b/.test(fileName) ||
+        /\bELEMENTARY\b/.test(fileName)
+    ) {
+        return 6;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 7. SHS
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        /\bSHS\b/.test(fileName) ||
+        /\bSENIOR HIGH\b/.test(fileName) ||
+        /\bSENIOR HIGH SCHOOL\b/.test(fileName)
+    ) {
+        return 7;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 8. ANNEX = ALWAYS JHS NON-IU
+    |--------------------------------------------------------------------------
+    |
+    | IMPORTANT:
+    |
+    | ANNEX MUST BE CHECKED BEFORE IU DETECTION.
+    |
+    | Even if the main school is an IU school,
+    | an ANNEX is automatically classified as NON-IU.
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        /\bANNEX\b/.test(fileName)
+    ) {
+        return 8;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 9. JHS IU
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        isIUSchool(fileItem.name)
+    ) {
+        return 9;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | 8. JHS NON-IU
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        /\bJHS\b/.test(fileName) ||
+        /\bJUNIOR HIGH\b/.test(fileName) ||
+        /\bJUNIOR HIGH SCHOOL\b/.test(fileName) ||
+        /\bNHS\b/.test(fileName) ||
+        /\bINHS\b/.test(fileName) ||
+        /\bIHS\b/.test(fileName)
+    ) {
+        return 8;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | UNKNOWN FILES
+    |--------------------------------------------------------------------------
+    |
+    | Unknown files are treated as JHS NON-IU.
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    return 8;
+}
+/*
+|--------------------------------------------------------------------------
+| CATEGORY NAME
+|--------------------------------------------------------------------------
+*/
+
+function getCategoryName(category) {
+
+    switch (category) {
+
+        case 1:
+            return "OSDS";
+
+        case 2:
+            return "SGOD";
+
+        case 3:
+            return "CID";
+
+        case 4:
+            return "ALS";
+
+        case 5:
+            return "KINDER";
+
+        case 6:
+            return "ELEM";
+
+        case 7:
+            return "SHS";
+
+        case 8:
+            return "JHS - NON IU";
+
+        case 9:
+            return "JHS - IU";
+
+        default:
+            return "OTHER";
+
+    }
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| AUTOMATIC FILE SORTING
+|--------------------------------------------------------------------------
+*/
+
+function sortFilesAutomatically(files) {
+
+    return [...files].sort(
+        (a, b) => {
+
+            const categoryA =
+                getFileCategory(a);
+
+            const categoryB =
+                getFileCategory(b);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | SORT BY CATEGORY FIRST
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                categoryA !== categoryB
+            ) {
+
+                return categoryA -
+                    categoryB;
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | SAME CATEGORY
+            |--------------------------------------------------------------------------
+            |
+            | Sort alphabetically.
+            |
+            |--------------------------------------------------------------------------
+            */
+
+            const nameA =
+                normalizeSchoolName(a.name);
+
+            const nameB =
+                normalizeSchoolName(b.name);
+
+
+            return nameA.localeCompare(
+                nameB
+            );
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| UPLOAD EXCEL FILES
+|--------------------------------------------------------------------------
+*/
+
+excelFilesInput.addEventListener(
+    "change",
+    async function (event) {
+
+        const files =
+            Array.from(event.target.files);
+
+
+        if (
+            files.length === 0
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADD FILES
+        |--------------------------------------------------------------------------
+        */
+
+        for (
+            const file of files
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | AVOID DUPLICATE FILENAMES
+            |--------------------------------------------------------------------------
+            */
+
+            const exists =
+                uploadedFiles.some(
+                    item =>
+                        item.name ===
+                        file.name
                 );
 
-                if (exists) {
-                    continue;
-                }
 
+            if (exists) {
 
-                uploadedFiles.push({
-                    id: generateId(),
-                    name: file.name,
-                    file: file,
-                    selected: true,
-                    workbook: null
-                });
+                continue;
 
             }
 
 
-            await readExcelFiles();
+            /*
+            |--------------------------------------------------------------------------
+            | ADD FILE
+            |--------------------------------------------------------------------------
+            */
 
-            renderUploadedFiles();
+            uploadedFiles.push({
 
-            updateMergeOrder();
+                id:
+                    generateId(),
 
-            fileList.classList.remove("hidden");
+                name:
+                    file.name,
 
-            openChecklistBtn.disabled = false;
+                file:
+                    file,
 
-            mergeBtn.disabled = false;
+                selected:
+                    true,
 
-        });
+                workbook:
+                    null
 
+            });
+
+        }
 
 
         /*
@@ -602,267 +1389,173 @@
         |--------------------------------------------------------------------------
         */
 
-        async function readExcelFiles() {
+        await readExcelFiles();
 
-            for (const item of uploadedFiles) {
 
-                if (item.workbook) {
-                    continue;
+        /*
+        |--------------------------------------------------------------------------
+        | RENDER FILE LIST
+        |--------------------------------------------------------------------------
+        */
+
+        renderUploadedFiles();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | AUTOMATICALLY UPDATE MERGE ORDER
+        |--------------------------------------------------------------------------
+        */
+
+        updateMergeOrder();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SHOW FILE LIST
+        |--------------------------------------------------------------------------
+        */
+
+        fileList.classList.remove(
+            "hidden"
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ENABLE BUTTONS
+        |--------------------------------------------------------------------------
+        */
+
+        openChecklistBtn.disabled =
+            false;
+
+        mergeBtn.disabled =
+            false;
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| READ EXCEL FILES
+|--------------------------------------------------------------------------
+*/
+
+async function readExcelFiles() {
+
+    for (
+        const item of uploadedFiles
+    ) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Already loaded
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            item.workbook
+        ) {
+
+            continue;
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | READ FILE
+        |--------------------------------------------------------------------------
+        */
+
+        const data =
+            await item.file.arrayBuffer();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | READ WORKBOOK
+        |--------------------------------------------------------------------------
+        */
+
+        item.workbook =
+            XLSX.read(
+                data,
+                {
+                    type: "array"
                 }
+            );
 
-                const data =
-                    await item.file.arrayBuffer();
+    }
 
-                item.workbook =
-                    XLSX.read(data, {
-                        type: "array"
-                    });
-
-            }
-
-        }
+}
 
 
+/*
+|--------------------------------------------------------------------------
+| RENDER UPLOADED FILES
+|--------------------------------------------------------------------------
+*/
 
-        /*
-        |--------------------------------------------------------------------------
-        | RENDER UPLOADED FILES
-        |--------------------------------------------------------------------------
-        */
+function renderUploadedFiles() {
 
-        function renderUploadedFiles() {
-
-            uploadedFilesContainer.innerHTML = "";
-
-            fileCount.textContent =
-                `${uploadedFiles.length} File${uploadedFiles.length !== 1 ? "s" : ""}`;
+    uploadedFilesContainer.innerHTML =
+        "";
 
 
-            uploadedFiles.forEach((item, index) => {
+    /*
+    |--------------------------------------------------------------------------
+    | FILE COUNT
+    |--------------------------------------------------------------------------
+    */
 
-                const row = document.createElement("div");
-
-                row.className =
-                    "flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3";
-
-
-                row.innerHTML = `
-
-                    <div class="flex items-center gap-3">
-
-                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center">
-                            📊
-                        </div>
-
-                        <div>
-
-                            <div class="font-medium text-slate-700">
-                                ${escapeHtml(item.name)}
-                            </div>
-
-                            <div class="text-xs text-slate-400">
-                                File ${index + 1}
-                            </div>
-
-                        </div>
-
-                    </div>
+    fileCount.textContent =
+        `${uploadedFiles.length} File${
+            uploadedFiles.length !== 1
+                ? "s"
+                : ""
+        }`;
 
 
-                    <button
-                        onclick="removeFile('${item.id}')"
-                        class="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg text-sm">
+    /*
+    |--------------------------------------------------------------------------
+    | DISPLAY FILES
+    |--------------------------------------------------------------------------
+    */
 
-                        Remove
+    uploadedFiles.forEach(
+        (item, index) => {
 
-                    </button>
-
-                `;
-
-
-                uploadedFilesContainer.appendChild(row);
-
-            });
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | REMOVE FILE
-        |--------------------------------------------------------------------------
-        */
-
-        function removeFile(id) {
-
-            uploadedFiles =
-                uploadedFiles.filter(
-                    item => item.id !== id
+            const row =
+                document.createElement(
+                    "div"
                 );
 
 
-            mergeOrder =
-                mergeOrder.filter(
-                    item => item.id !== id
+            row.className =
+                "flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3";
+
+
+            const category =
+                getCategoryName(
+                    getFileCategory(item)
                 );
 
 
-            renderUploadedFiles();
+            row.innerHTML = `
 
-            updateMergeOrder();
+                <div class="flex items-center gap-3">
 
+                    <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center">
 
-            fileCount.textContent =
-                `${uploadedFiles.length} File${uploadedFiles.length !== 1 ? "s" : ""}`;
-
-
-            if (uploadedFiles.length === 0) {
-
-                fileList.classList.add("hidden");
-
-                openChecklistBtn.disabled = true;
-
-                mergeBtn.disabled = true;
-
-                downloadBtn.disabled = true;
-
-            }
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | OPEN CHECKLIST MODAL
-        |--------------------------------------------------------------------------
-        */
-
-        openChecklistBtn.addEventListener("click", function () {
-
-            renderChecklist();
-
-            checklistModal.classList.remove("hidden");
-
-        });
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CLOSE MODAL
-        |--------------------------------------------------------------------------
-        */
-
-        document
-            .getElementById("closeModalBtn")
-            .addEventListener("click", closeModal);
-
-
-        document
-            .getElementById("cancelModalBtn")
-            .addEventListener("click", closeModal);
-
-
-        function closeModal() {
-
-            checklistModal.classList.add("hidden");
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | RENDER DRAGGABLE CHECKLIST
-        |--------------------------------------------------------------------------
-        */
-
-        function renderChecklist() {
-
-            checklistContainer.innerHTML = "";
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Use existing merge order first
-            |--------------------------------------------------------------------------
-            */
-
-            let orderedItems = [];
-
-
-            if (mergeOrder.length > 0) {
-
-                orderedItems = [...mergeOrder];
-
-
-                uploadedFiles.forEach(file => {
-
-                    const exists =
-                        orderedItems.some(
-                            item => item.id === file.id
-                        );
-
-
-                    if (!exists) {
-                        orderedItems.push(file);
-                    }
-
-                });
-
-            } else {
-
-                orderedItems = [...uploadedFiles];
-
-            }
-
-
-
-            orderedItems.forEach((item, index) => {
-
-                const checklistItem =
-                    document.createElement("div");
-
-
-                checklistItem.className =
-                    "drag-item flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition";
-
-
-                checklistItem.dataset.id = item.id;
-
-
-                checklistItem.innerHTML = `
-
-                    <!-- DRAG HANDLE -->
-
-                    <div class="text-slate-400 text-lg select-none">
-                        ☰
-                    </div>
-
-
-                    <!-- ORDER -->
-
-                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-600">
-
-                        ${index + 1}
+                        📊
 
                     </div>
 
 
-                    <!-- CHECKBOX -->
-
-                    <input
-                        type="checkbox"
-                        class="file-checkbox w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                        ${item.selected ? "checked" : ""}
-                    >
-
-
-                    <!-- FILE NAME -->
-
-                    <div class="flex-1">
+                    <div>
 
                         <div class="font-medium text-slate-700">
 
@@ -870,165 +1563,486 @@
 
                         </div>
 
-                        <div class="text-xs text-slate-400 mt-1">
 
-                            Drag to change Plantilla order
+                        <div class="text-xs text-slate-400">
+
+                            File ${index + 1}
+                            •
+                            ${category}
 
                         </div>
 
                     </div>
 
+                </div>
 
-                    <!-- STATUS -->
 
-                    <div class="text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-600">
+                <button
 
-                        #${index + 1}
+                    onclick="removeFile('${item.id}')"
+
+                    class="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg text-sm">
+
+                    Remove
+
+                </button>
+
+            `;
+
+
+            uploadedFilesContainer.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| REMOVE FILE
+|--------------------------------------------------------------------------
+*/
+
+function removeFile(id) {
+
+    uploadedFiles =
+        uploadedFiles.filter(
+            item =>
+                item.id !== id
+        );
+
+
+    mergeOrder =
+        mergeOrder.filter(
+            item =>
+                item.id !== id
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RENDER AGAIN
+    |--------------------------------------------------------------------------
+    */
+
+    renderUploadedFiles();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | AUTOMATICALLY REORDER
+    |--------------------------------------------------------------------------
+    */
+
+    updateMergeOrder();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE COUNT
+    |--------------------------------------------------------------------------
+    */
+
+    fileCount.textContent =
+        `${uploadedFiles.length} File${
+            uploadedFiles.length !== 1
+                ? "s"
+                : ""
+        }`;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | EMPTY STATE
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        uploadedFiles.length === 0
+    ) {
+
+        fileList.classList.add(
+            "hidden"
+        );
+
+        openChecklistBtn.disabled =
+            true;
+
+        mergeBtn.disabled =
+            true;
+
+        downloadBtn.disabled =
+            true;
+
+    }
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| OPEN CHECKLIST MODAL
+|--------------------------------------------------------------------------
+*/
+
+openChecklistBtn.addEventListener(
+    "click",
+    function () {
+
+        renderChecklist();
+
+        checklistModal.classList.remove(
+            "hidden"
+        );
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| CLOSE MODAL
+|--------------------------------------------------------------------------
+*/
+
+document
+    .getElementById("closeModalBtn")
+    .addEventListener(
+        "click",
+        closeModal
+    );
+
+
+document
+    .getElementById("cancelModalBtn")
+    .addEventListener(
+        "click",
+        closeModal
+    );
+
+
+function closeModal() {
+
+    checklistModal.classList.add(
+        "hidden"
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RENDER DRAGGABLE CHECKLIST
+|--------------------------------------------------------------------------
+*/
+
+function renderChecklist() {
+
+    checklistContainer.innerHTML =
+        "";
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | AUTOMATICALLY SORT CHECKLIST
+    |--------------------------------------------------------------------------
+    */
+
+    const orderedItems =
+        sortFilesAutomatically(
+            uploadedFiles
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DISPLAY CHECKLIST
+    |--------------------------------------------------------------------------
+    */
+
+    orderedItems.forEach(
+        (item, index) => {
+
+            const checklistItem =
+                document.createElement(
+                    "div"
+                );
+
+
+            checklistItem.className =
+                "drag-item flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition";
+
+
+            checklistItem.dataset.id =
+                item.id;
+
+
+            const category =
+                getCategoryName(
+                    getFileCategory(item)
+                );
+
+
+            checklistItem.innerHTML = `
+
+                <!-- DRAG HANDLE -->
+
+                <div class="text-slate-400 text-lg select-none">
+
+                    ☰
+
+                </div>
+
+
+                <!-- ORDER -->
+
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-600">
+
+                    ${index + 1}
+
+                </div>
+
+
+                <!-- CHECKBOX -->
+
+                <input
+
+                    type="checkbox"
+
+                    class="file-checkbox w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+
+                    ${item.selected ? "checked" : ""}
+
+                >
+
+
+                <!-- FILE NAME -->
+
+                <div class="flex-1">
+
+                    <div class="font-medium text-slate-700">
+
+                        ${escapeHtml(item.name)}
 
                     </div>
 
-                `;
+
+                    <div class="text-xs text-slate-400 mt-1">
+
+                        ${category}
+
+                    </div>
+
+                </div>
 
 
-                checklistContainer.appendChild(
-                    checklistItem
+                <!-- STATUS -->
+
+                <div class="text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-600">
+
+                    #${index + 1}
+
+                </div>
+
+            `;
+
+
+            checklistContainer.appendChild(
+                checklistItem
+            );
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | INITIALIZE SORTABLE
+    |--------------------------------------------------------------------------
+    |
+    | Dragging is allowed visually, but SAVE will restore the automatic
+    | category order.
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        sortableInstance
+    ) {
+
+        sortableInstance.destroy();
+
+    }
+
+
+    sortableInstance =
+        new Sortable(
+            checklistContainer,
+            {
+
+                animation: 150,
+
+                ghostClass:
+                    "drag-ghost",
+
+                chosenClass:
+                    "drag-chosen",
+
+                handle:
+                    ".drag-item",
+
+                onEnd:
+                    function () {
+
+                        updateChecklistNumbers();
+
+                    }
+
+            }
+        );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE CHECKLIST NUMBERS
+|--------------------------------------------------------------------------
+*/
+
+function updateChecklistNumbers() {
+
+    const items =
+        checklistContainer.querySelectorAll(
+            ".drag-item"
+        );
+
+
+    items.forEach(
+        (item, index) => {
+
+            const numberElements =
+                item.querySelectorAll(
+                    ".rounded-full"
                 );
 
-            });
 
+            if (
+                numberElements.length > 0
+            ) {
+
+                numberElements[0]
+                    .textContent =
+                    index + 1;
+
+
+                numberElements[1]
+                    .textContent =
+                    `#${index + 1}`;
+
+            }
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| SELECT ALL
+|--------------------------------------------------------------------------
+*/
+
+document
+    .getElementById("selectAllBtn")
+    .addEventListener(
+        "click",
+        function () {
+
+            const checkboxes =
+                checklistContainer.querySelectorAll(
+                    ".file-checkbox"
+                );
+
+
+            const allChecked =
+                Array.from(
+                    checkboxes
+                ).every(
+                    checkbox =>
+                        checkbox.checked
+                );
+
+
+            checkboxes.forEach(
+                checkbox => {
+
+                    checkbox.checked =
+                        !allChecked;
+
+                }
+            );
+
+
+            this.textContent =
+                allChecked
+                    ? "Select All"
+                    : "Deselect All";
+
+        }
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| SAVE ARRANGEMENT
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+|
+| The drag order is NOT used as the final merge order.
+|
+| The checkboxes only determine which files are selected.
+|
+| After saving, the system automatically restores:
+|
+| OSDS
+| SGOD
+| CID
+| ALS
+| KINDER
+| ELEM
+| SHS
+| JHS NON-IU
+| JHS IU
+|
+|--------------------------------------------------------------------------
+*/
+
+document
+    .getElementById("saveArrangementBtn")
+    .addEventListener(
+        "click",
+        function () {
+
+            const items =
+                checklistContainer.querySelectorAll(
+                    ".drag-item"
+                );
 
 
             /*
             |--------------------------------------------------------------------------
-            | Initialize SortableJS
+            | UPDATE SELECTED STATUS
             |--------------------------------------------------------------------------
             */
 
-            if (sortableInstance) {
-
-                sortableInstance.destroy();
-
-            }
-
-
-            sortableInstance =
-                new Sortable(
-                    checklistContainer,
-                    {
-                        animation: 150,
-
-                        ghostClass: "drag-ghost",
-
-                        chosenClass: "drag-chosen",
-
-                        handle: ".drag-item",
-
-                        onEnd: function () {
-
-                            updateChecklistNumbers();
-
-                        }
-
-                    }
-                );
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | UPDATE CHECKLIST NUMBERS
-        |--------------------------------------------------------------------------
-        */
-
-        function updateChecklistNumbers() {
-
-            const items =
-                checklistContainer.querySelectorAll(".drag-item");
-
-
-            items.forEach((item, index) => {
-
-                const numberElements =
-                    item.querySelectorAll(".rounded-full");
-
-
-                if (numberElements.length > 0) {
-
-                    numberElements[0].textContent =
-                        index + 1;
-
-                    numberElements[1].textContent =
-                        `#${index + 1}`;
-
-                }
-
-            });
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | SELECT ALL
-        |--------------------------------------------------------------------------
-        */
-
-        document
-            .getElementById("selectAllBtn")
-            .addEventListener("click", function () {
-
-                const checkboxes =
-                    checklistContainer.querySelectorAll(
-                        ".file-checkbox"
-                    );
-
-
-                const allChecked =
-                    Array.from(checkboxes)
-                        .every(
-                            checkbox => checkbox.checked
-                        );
-
-
-                checkboxes.forEach(checkbox => {
-
-                    checkbox.checked = !allChecked;
-
-                });
-
-
-                this.textContent =
-                    allChecked
-                        ? "Select All"
-                        : "Deselect All";
-
-            });
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | SAVE ARRANGEMENT
-        |--------------------------------------------------------------------------
-        */
-
-        document
-            .getElementById("saveArrangementBtn")
-            .addEventListener("click", function () {
-
-                const items =
-                    checklistContainer.querySelectorAll(
-                        ".drag-item"
-                    );
-
-
-                mergeOrder = [];
-
-
-                items.forEach(itemElement => {
+            items.forEach(
+                itemElement => {
 
                     const id =
                         itemElement.dataset.id;
@@ -1042,485 +2056,741 @@
 
                     const file =
                         uploadedFiles.find(
-                            item => item.id === id
+                            item =>
+                                item.id === id
                         );
 
 
                     if (!file) {
+
                         return;
+
                     }
 
 
                     file.selected =
                         checkbox.checked;
 
-
-                    if (file.selected) {
-
-                        mergeOrder.push(file);
-
-                    }
-
-                });
-
-
-                updateMergeOrder();
-
-                closeModal();
-
-            });
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | UPDATE CURRENT MERGE ORDER
-        |--------------------------------------------------------------------------
-        */
-
-        function updateMergeOrder() {
-
-            mergeOrderContainer.innerHTML = "";
-
-
-            if (mergeOrder.length === 0) {
-
-                const selectedFiles =
-                    uploadedFiles.filter(
-                        file => file.selected
-                    );
-
-
-                mergeOrder =
-                    [...selectedFiles];
-
-            }
-
-
-            if (mergeOrder.length === 0) {
-
-                mergeOrderContainer.innerHTML = `
-
-                    <div class="text-center py-8 text-slate-400">
-
-                        No files selected for merging.
-
-                    </div>
-
-                `;
-
-                return;
-
-            }
-
-
-            mergeOrder.forEach((item, index) => {
-
-                const row =
-                    document.createElement("div");
-
-
-                row.className =
-                    "flex items-center gap-4 p-4 border border-slate-200 rounded-xl bg-slate-50";
-
-
-                row.innerHTML = `
-
-                    <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
-
-                        ${index + 1}
-
-                    </div>
-
-
-                    <div class="flex-1">
-
-                        <div class="font-medium text-slate-700">
-
-                            ${escapeHtml(item.name)}
-
-                        </div>
-
-                        <div class="text-xs text-slate-400">
-
-                            Plantilla Position ${index + 1}
-
-                        </div>
-
-                    </div>
-
-
-                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
-
-                        Included
-
-                    </span>
-
-                `;
-
-
-                mergeOrderContainer.appendChild(row);
-
-            });
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | MERGE EXCEL FILES
-        |--------------------------------------------------------------------------
-        */
-
-        mergeBtn.addEventListener("click", function () {
-
-            if (mergeOrder.length === 0) {
-
-                alert(
-                    "Please select at least one Excel file."
-                );
-
-                return;
-
-            }
-
-
-            mergeExcelFiles();
-
-        });
-
-
-
-        function mergeExcelFiles() {
-
-            mergedData = [];
-
-
-            let headerAdded = false;
-
-
-            mergeOrder.forEach((fileItem, fileIndex) => {
-
-                const workbook =
-                    fileItem.workbook;
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Read the first sheet
-                |--------------------------------------------------------------------------
-                |
-                | You can modify this later if you want
-                | to select a specific worksheet.
-                |
-                */
-
-                const firstSheetName =
-                    workbook.SheetNames[0];
-
-
-                const worksheet =
-                    workbook.Sheets[firstSheetName];
-
-
-                const jsonData =
-                    XLSX.utils.sheet_to_json(
-                        worksheet,
-                        {
-                            header: 1,
-                            defval: ""
-                        }
-                    );
-
-
-                if (jsonData.length === 0) {
-                    return;
                 }
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | First File
-                |--------------------------------------------------------------------------
-                */
-
-                if (!headerAdded) {
-
-                    mergedData.push(
-                        ...jsonData
-                    );
-
-                    headerAdded = true;
-
-                }
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Remaining Files
-                |--------------------------------------------------------------------------
-                |
-                | Skip the first row because it is assumed
-                | to contain the same header.
-                |
-                */
-
-                else {
-
-                    const dataWithoutHeader =
-                        jsonData.slice(1);
-
-
-                    mergedData.push(
-                        ...dataWithoutHeader
-                    );
-
-                }
-
-            });
-
+            );
 
 
             /*
             |--------------------------------------------------------------------------
-            | CREATE WORKBOOK
+            | AUTOMATICALLY REBUILD ORDER
             |--------------------------------------------------------------------------
             */
 
-            const newWorkbook =
-                XLSX.utils.book_new();
+            updateMergeOrder();
 
 
-            const newWorksheet =
-                XLSX.utils.aoa_to_sheet(
-                    mergedData
+            /*
+            |--------------------------------------------------------------------------
+            | CLOSE MODAL
+            |--------------------------------------------------------------------------
+            */
+
+            closeModal();
+
+        }
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE CURRENT MERGE ORDER
+|--------------------------------------------------------------------------
+*/
+
+function updateMergeOrder() {
+
+    mergeOrderContainer.innerHTML =
+        "";
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ONLY SELECTED FILES
+    |--------------------------------------------------------------------------
+    */
+
+    const selectedFiles =
+        uploadedFiles.filter(
+            file =>
+                file.selected
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | AUTOMATIC CATEGORY SORT
+    |--------------------------------------------------------------------------
+    */
+
+    mergeOrder =
+        sortFilesAutomatically(
+            selectedFiles
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NO FILES
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        mergeOrder.length === 0
+    ) {
+
+        mergeOrderContainer.innerHTML = `
+
+            <div class="text-center py-8 text-slate-400">
+
+                No files selected for merging.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DISPLAY FINAL MERGE ORDER
+    |--------------------------------------------------------------------------
+    */
+
+    mergeOrder.forEach(
+        (item, index) => {
+
+            const row =
+                document.createElement(
+                    "div"
                 );
 
 
-            XLSX.utils.book_append_sheet(
-                newWorkbook,
-                newWorksheet,
-                "Merged Plantilla"
+            const category =
+                getCategoryName(
+                    getFileCategory(item)
+                );
+
+
+            row.className =
+                "flex items-center gap-4 p-4 border border-slate-200 rounded-xl bg-slate-50";
+
+
+            row.innerHTML = `
+
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+
+                    ${index + 1}
+
+                </div>
+
+
+                <div class="flex-1">
+
+                    <div class="font-medium text-slate-700">
+
+                        ${escapeHtml(item.name)}
+
+                    </div>
+
+
+                    <div class="text-xs text-slate-400">
+
+                        Plantilla Position ${index + 1}
+
+                    </div>
+
+                </div>
+
+
+                <span class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
+
+                    ${category}
+
+                </span>
+
+            `;
+
+
+            mergeOrderContainer.appendChild(
+                row
             );
 
+        }
+    );
 
-            mergedWorkbook =
-                newWorkbook;
-
-
-            renderPreview();
+}
 
 
-            downloadBtn.disabled = false;
+/*
+|--------------------------------------------------------------------------
+| MERGE EXCEL FILES
+|--------------------------------------------------------------------------
+*/
 
+mergeBtn.addEventListener(
+    "click",
+    function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | MAKE SURE ORDER IS ALWAYS FRESH
+        |--------------------------------------------------------------------------
+        */
+
+        updateMergeOrder();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CHECK FILES
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            mergeOrder.length === 0
+        ) {
 
             alert(
-                "Excel files successfully merged!"
+                "Please select at least one Excel file."
             );
 
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | RENDER PREVIEW
-        |--------------------------------------------------------------------------
-        */
-
-        function renderPreview() {
-
-            if (mergedData.length === 0) {
-
-                previewContainer.innerHTML = `
-
-                    <div class="text-center py-16 text-slate-400">
-
-                        No merged data available.
-
-                    </div>
-
-                `;
-
-                return;
-
-            }
-
-
-            const previewRows =
-                mergedData.slice(0, 100);
-
-
-            let html = `
-
-                <table
-                    id="previewTable"
-                    class="min-w-full divide-y divide-slate-200 text-sm">
-
-                    <thead class="bg-slate-800 text-white">
-
-                        <tr>
-
-            `;
-
-
-            previewRows[0].forEach(header => {
-
-                html += `
-
-                    <th class="px-4 py-3 text-left font-semibold">
-
-                        ${escapeHtml(header)}
-
-                    </th>
-
-                `;
-
-            });
-
-
-            html += `
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody class="divide-y divide-slate-100">
-
-            `;
-
-
-            previewRows.slice(1).forEach(row => {
-
-                html += `<tr class="hover:bg-slate-50">`;
-
-
-                row.forEach(cell => {
-
-                    html += `
-
-                        <td class="px-4 py-3 text-slate-600">
-
-                            ${escapeHtml(cell)}
-
-                        </td>
-
-                    `;
-
-                });
-
-
-                html += `</tr>`;
-
-            });
-
-
-            html += `
-
-                    </tbody>
-
-                </table>
-
-            `;
-
-
-            if (mergedData.length > 100) {
-
-                html += `
-
-                    <div class="p-4 text-center text-sm text-slate-500 border-t">
-
-                        Showing first 100 rows of ${mergedData.length} total rows.
-
-                    </div>
-
-                `;
-
-            }
-
-
-            previewContainer.innerHTML = html;
+            return;
 
         }
 
 
-
         /*
         |--------------------------------------------------------------------------
-        | DOWNLOAD MERGED EXCEL FILE
+        | MERGE
         |--------------------------------------------------------------------------
         */
 
-        downloadBtn.addEventListener("click", function () {
+        mergeExcelFiles();
 
-            if (!mergedWorkbook) {
+    }
+);
 
-                alert(
-                    "Please merge the Excel files first."
+
+/*
+|--------------------------------------------------------------------------
+| MERGE EXCEL FILES FUNCTION
+|--------------------------------------------------------------------------
+*/
+
+function mergeExcelFiles() {
+
+    mergedData = [];
+
+    let headerAdded = false;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTANT
+    |--------------------------------------------------------------------------
+    |
+    | mergeOrder is already automatically sorted.
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    mergeOrder.forEach(
+        (fileItem, fileIndex) => {
+
+            const workbook =
+                fileItem.workbook;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | READ FIRST SHEET
+            |--------------------------------------------------------------------------
+            */
+
+            const firstSheetName =
+                workbook.SheetNames[0];
+
+
+            const worksheet =
+                workbook.Sheets[
+                    firstSheetName
+                ];
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | CONVERT TO ARRAY
+            |--------------------------------------------------------------------------
+            */
+
+            const jsonData =
+                XLSX.utils.sheet_to_json(
+                    worksheet,
+                    {
+
+                        header: 1,
+
+                        defval: ""
+
+                    }
                 );
 
+
+            /*
+            |--------------------------------------------------------------------------
+            | EMPTY FILE
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                jsonData.length === 0
+            ) {
+
                 return;
 
             }
 
 
-            XLSX.writeFile(
-                mergedWorkbook,
-                "Merged_Plantilla.xlsx"
-            );
-
-        });
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | GENERATE ID
-        |--------------------------------------------------------------------------
-        */
-
-        function generateId() {
-
-            return (
-                Date.now().toString(36)
-                +
-                Math.random()
-                    .toString(36)
-                    .substring(2, 9)
-            );
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | ESCAPE HTML
-        |--------------------------------------------------------------------------
-        */
-
-        function escapeHtml(value) {
+            /*
+            |--------------------------------------------------------------------------
+            | FIRST FILE
+            |--------------------------------------------------------------------------
+            */
 
             if (
-                value === null ||
-                value === undefined
+                !headerAdded
             ) {
-                return "";
+
+                mergedData.push(
+                    ...jsonData
+                );
+
+
+                headerAdded =
+                    true;
+
             }
 
 
-            return String(value)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+            /*
+            |--------------------------------------------------------------------------
+            | REMAINING FILES
+            |--------------------------------------------------------------------------
+            |
+            | Skip their header row.
+            |
+            |--------------------------------------------------------------------------
+            */
+
+            else {
+
+                const dataWithoutHeader =
+                    jsonData.slice(1);
+
+
+                mergedData.push(
+                    ...dataWithoutHeader
+                );
+
+            }
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE NEW WORKBOOK
+    |--------------------------------------------------------------------------
+    */
+
+    const newWorkbook =
+        XLSX.utils.book_new();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE WORKSHEET
+    |--------------------------------------------------------------------------
+    */
+
+    const newWorksheet =
+        XLSX.utils.aoa_to_sheet(
+            mergedData
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPEND SHEET
+    |--------------------------------------------------------------------------
+    */
+
+    XLSX.utils.book_append_sheet(
+        newWorkbook,
+        newWorksheet,
+        "Merged Plantilla"
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SAVE WORKBOOK IN MEMORY
+    |--------------------------------------------------------------------------
+    */
+
+    mergedWorkbook =
+        newWorkbook;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PREVIEW
+    |--------------------------------------------------------------------------
+    */
+
+    renderPreview();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ENABLE DOWNLOAD
+    |--------------------------------------------------------------------------
+    */
+
+    downloadBtn.disabled =
+        false;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUCCESS
+    |--------------------------------------------------------------------------
+    */
+
+    alert(
+        "Excel files successfully merged!"
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RENDER PREVIEW
+|--------------------------------------------------------------------------
+*/
+
+function renderPreview() {
+
+    /*
+    |--------------------------------------------------------------------------
+    | EMPTY
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        mergedData.length === 0
+    ) {
+
+        previewContainer.innerHTML = `
+
+            <div class="text-center py-16 text-slate-400">
+
+                No merged data available.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FIRST 100 ROWS
+    |--------------------------------------------------------------------------
+    */
+
+    const previewRows =
+        mergedData.slice(
+            0,
+            100
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TABLE OPEN
+    |--------------------------------------------------------------------------
+    */
+
+    let html = `
+
+        <table
+
+            id="previewTable"
+
+            class="min-w-full divide-y divide-slate-200 text-sm">
+
+            <thead class="bg-slate-800 text-white">
+
+                <tr>
+
+    `;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | HEADERS
+    |--------------------------------------------------------------------------
+    */
+
+    previewRows[0].forEach(
+        header => {
+
+            html += `
+
+                <th class="px-4 py-3 text-left font-semibold">
+
+                    ${escapeHtml(header)}
+
+                </th>
+
+            `;
+
+        }
+    );
+
+
+    html += `
+
+                </tr>
+
+            </thead>
+
+            <tbody class="divide-y divide-slate-100">
+
+    `;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DATA ROWS
+    |--------------------------------------------------------------------------
+    */
+
+    previewRows
+        .slice(1)
+        .forEach(
+            row => {
+
+                html +=
+                    `<tr class="hover:bg-slate-50">`;
+
+
+                row.forEach(
+                    cell => {
+
+                        html += `
+
+                            <td class="px-4 py-3 text-slate-600">
+
+                                ${escapeHtml(cell)}
+
+                            </td>
+
+                        `;
+
+                    }
+                );
+
+
+                html +=
+                    `</tr>`;
+
+            }
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CLOSE TABLE
+    |--------------------------------------------------------------------------
+    */
+
+    html += `
+
+            </tbody>
+
+        </table>
+
+    `;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MORE THAN 100 ROWS
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        mergedData.length > 100
+    ) {
+
+        html += `
+
+            <div class="p-4 text-center text-sm text-slate-500 border-t">
+
+                Showing first 100 rows of
+                ${mergedData.length}
+                total rows.
+
+            </div>
+
+        `;
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DISPLAY
+    |--------------------------------------------------------------------------
+    */
+
+    previewContainer.innerHTML =
+        html;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| DOWNLOAD MERGED EXCEL FILE
+|--------------------------------------------------------------------------
+*/
+
+downloadBtn.addEventListener(
+    "click",
+    function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | CHECK WORKBOOK
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !mergedWorkbook
+        ) {
+
+            alert(
+                "Please merge the Excel files first."
+            );
+
+            return;
 
         }
 
 
-    </script>
+        /*
+        |--------------------------------------------------------------------------
+        | DOWNLOAD
+        |--------------------------------------------------------------------------
+        */
+
+        XLSX.writeFile(
+            mergedWorkbook,
+            "PSIPOP CONTROL.xlsx"
+        );
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| GENERATE ID
+|--------------------------------------------------------------------------
+*/
+
+function generateId() {
+
+    return (
+
+        Date.now().toString(36)
+
+        +
+
+        Math.random()
+            .toString(36)
+            .substring(2, 9)
+
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| ESCAPE HTML
+|--------------------------------------------------------------------------
+*/
+
+function escapeHtml(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+</script>
+
 
 </body>
 </html>
