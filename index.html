@@ -120,7 +120,7 @@
 
                <div 
                 id="uploadedFiles" 
-                class="space-y-2 max-h-96 overflow-y-auto pr-2">
+                class="space-y-2 max-h-80 overflow-y-auto pr-2">
             </div>
 
             </div>
@@ -172,7 +172,7 @@
 
                 <button
                     id="summaryUnfilledBtn"
-                    class="px-5 py-3 bg-blue-600 hover:bg-blue-700
+                    class="px-5 py-3 bg-black hover:bg-blue-700
                         disabled:bg-slate-300 disabled:cursor-not-allowed
                         text-white rounded-xl font-medium transition"
                 >
@@ -180,7 +180,7 @@
                         href="./summary-generator.html"
                         style="text-decoration: none; color: inherit;"
                     >
-                        📋 Summary
+                        📋 Summary of Filled and Unfilled Report Generator
                     </a>
                 </button>
 
@@ -319,7 +319,7 @@
 
                 <!-- COPYRIGHT -->
                 <div class="text-sm text-slate-500 text-center sm:text-left">
-                    © 2026 Excel Plantilla Merger.
+                    © 2026 PSIPOP Converted Excel Plantilla Merger.
                     All rights reserved.
                 </div>
 
@@ -477,9 +477,6 @@
 
     </div>
 
-
-
-    ```html
 <script>
 
 /*
@@ -2712,7 +2709,7 @@ downloadBtn.addEventListener(
 
         XLSX.writeFile(
             mergedWorkbook,
-            "PSIPOP CONTROL.xlsx"
+            "PSIPOP CONTROL_SDO UPDATED AS OF .xlsx"
         );
 
     }
