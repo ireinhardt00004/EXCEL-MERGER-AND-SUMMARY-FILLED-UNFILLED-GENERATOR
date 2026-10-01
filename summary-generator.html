@@ -4738,6 +4738,15 @@ function generateSummary() {
 
     renderSummary();
 
+    /*
+     * IMPORTANT:
+     * Generate all three reports in the same Generate Summary workflow.
+     * This removes the timing dependency on a second click listener.
+     */
+    if (typeof generateAllAdditionalSummaries === "function") {
+        generateAllAdditionalSummaries();
+    }
+
 }
 
 
@@ -6322,7 +6331,19 @@ Filled/Unfilled is based on Name of Incumbent.
      * console instead of just showing an alert.
      */
     function getRealSchoolColumn() {
+        /*
+         * IMPORTANT:
+         * In the plantilla workbook, PLANTILLA ASSIGNMENT may contain
+         * the actual school/station name for JHS rows.
+         *
+         * Therefore PLANTILLA ASSIGNMENT is intentionally checked FIRST.
+         * This prevents another generic SCHOOL column from being selected
+         * when the JHS school name is actually stored in PLANTILLA ASSIGNMENT.
+         */
         const candidates = [
+            "PLANTILLA ASSIGNMENT",
+            "PLANTILLA ASSIGNMENT / SCHOOL",
+            "PLANTILLA ASSIGNMENT/SCHOOL",
             "SCHOOL NAME",
             "NAME OF SCHOOL",
             "SCHOOL / STATION",
@@ -6331,8 +6352,9 @@ Filled/Unfilled is based on Name of Incumbent.
             "SCHOOL ASSIGNMENT",
             "JHS SCHOOL",
             "SCHOOL NAME / STATION",
-            "SCHOOL",
-            "PLANTILLA ASSIGNMENT"
+            "NAME OF SCHOOL/STATION",
+            "SCHOOL/STATION NAME",
+            "SCHOOL"
         ];
 
         const columns = typeof currentData !== "undefined" && currentData.length
@@ -6350,7 +6372,14 @@ Filled/Unfilled is based on Name of Incumbent.
             const exact = columns.find(c => norm(c) === key);
 
             if (exact) {
-                console.log(`[JHS Export] School column matched EXACTLY: "${keyword}" -> "${exact}"`);
+                console.log(
+                    `[JHS Export] School column matched EXACTLY: "${keyword}" -> "${exact}"`
+                );
+                if (normalize(exact) === normalize("PLANTILLA ASSIGNMENT")) {
+                    console.log(
+                        "[JHS Export] PLANTILLA ASSIGNMENT is being used as the JHS school name."
+                    );
+                }
                 return exact;
             }
         }
@@ -6390,14 +6419,42 @@ Filled/Unfilled is based on Name of Incumbent.
             ? getDivisionColumn()
             : null;
 
-        const schoolColumn = getRealSchoolColumn();
+        /*
+         * JHS SCHOOL SOURCE
+         *
+         * PLANTILLA ASSIGNMENT is deliberately preferred because in the
+         * user's plantilla file it contains the school/station assignment.
+         * Only if it does not exist do we fall back to a normal SCHOOL column.
+         */
+        const columns = currentData.length
+            ? Object.keys(currentData[0])
+            : [];
+
+        const normalized = value => normalize(value);
+
+        const plantillaAssignmentColumn =
+            columns.find(c => normalized(c) === normalized("PLANTILLA ASSIGNMENT")) ||
+            columns.find(c => normalized(c).includes(normalized("PLANTILLA ASSIGNMENT"))) ||
+            null;
+
+        const schoolColumn = plantillaAssignmentColumn || getRealSchoolColumn();
+
+        debugLog("Additional summary columns:", {
+            positionColumn,
+            incumbentColumn,
+            categoryColumn,
+            divisionColumn,
+            plantillaAssignmentColumn,
+            schoolColumn
+        });
 
         return {
             positionColumn,
             incumbentColumn,
             categoryColumn,
             divisionColumn,
-            schoolColumn
+            schoolColumn,
+            plantillaAssignmentColumn
         };
     }
 
@@ -6467,7 +6524,19 @@ Filled/Unfilled is based on Name of Incumbent.
      * export buttons still get created (and can still be diagnosed).
      */
     function ensureAdditionalSummaryArea() {
-        if (document.getElementById("plantillaPositionSummarySection")) return;
+        const existing = document.getElementById("additionalSummaryWrapper");
+
+        if (
+            existing &&
+            document.getElementById("plantillaPositionSummarySection") &&
+            document.getElementById("jhsSchoolSummarySection")
+        ) {
+            return;
+        }
+
+        if (existing) {
+            existing.remove();
+        }
 
         const wrapperHtml = `
             <div id="additionalSummaryWrapper" class="space-y-6 mt-6">
@@ -6591,15 +6660,28 @@ Filled/Unfilled is based on Name of Incumbent.
             ? isVacant(row[columns.incumbentColumn])
             : !String(row[columns.incumbentColumn] ?? "").trim();
 
+        /*
+         * SCHOOL NAME RULE:
+         * Prefer PLANTILLA ASSIGNMENT because this is the school/station
+         * value in the user's plantilla data. If it is unavailable, use
+         * the detected school column as a fallback.
+         */
+        const schoolSourceColumn =
+            columns.plantillaAssignmentColumn ||
+            columns.schoolColumn ||
+            "";
+
+        const school = schoolSourceColumn
+            ? String(row[schoolSourceColumn] ?? "").trim()
+            : "";
+
         return {
             position,
             category: category || "UNCLASSIFIED",
             plantilla,
             filled: vacant ? 0 : 1,
             unfilled: vacant ? 1 : 0,
-            school: columns.schoolColumn
-                ? String(row[columns.schoolColumn] ?? "").trim()
-                : ""
+            school
         };
     }
 
@@ -6776,10 +6858,10 @@ Filled/Unfilled is based on Name of Incumbent.
 
         if (!columns.schoolColumn) {
             alert(
-                "A SCHOOL / SCHOOL NAME column could not be detected.\n\n" +
-                "The JHS school summary needs the school name in the Excel data.\n" +
-                "Open the browser console (F12) — it lists the columns that were found " +
-                "in your sheet so you can see the exact header text to add."
+                "PLANTILLA ASSIGNMENT / SCHOOL column could not be detected.\n\n" +
+                "The JHS summary uses PLANTILLA ASSIGNMENT as the school name " +
+                "when that column exists, with a SCHOOL column as fallback.\n\n" +
+                "Open the browser console (F12) to see the detected Excel headers."
             );
             return [];
         }
@@ -7157,21 +7239,16 @@ Filled/Unfilled is based on Name of Incumbent.
     function initializeAdditionalSummaries() {
         ensureAdditionalSummaryArea();
 
-        /*
-         * Regenerate the two additional summaries whenever the
-         * existing Generate Summary button is used.
-         */
-        document.getElementById("generateBtn")
-            ?.addEventListener("click", () => {
-                setTimeout(generateAllAdditionalSummaries, 0);
-            });
-
         document.getElementById("sheetSelect")
             ?.addEventListener("change", () => {
-                setTimeout(() => {
-                    const sections = document.getElementById("additionalSummaryWrapper");
-                    if (sections) sections.remove();
-                }, 0);
+                const sections = document.getElementById("additionalSummaryWrapper");
+                if (sections) sections.remove();
+
+                /*
+                 * The new sheet is not summarized until the user clicks
+                 * Generate Summary. The Generate workflow will recreate
+                 * the sections safely.
+                 */
             });
     }
 
